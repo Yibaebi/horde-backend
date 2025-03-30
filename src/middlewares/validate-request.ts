@@ -1,0 +1,45 @@
+import z from 'zod';
+import { type NextFunction, type Request, type Response } from 'express';
+
+import { BadRequestError } from '@/config/error';
+import { formatParsedZodError } from '@/utils/helpers';
+import objectIDSchema from '@/schemas/object-id';
+
+/**
+ * Middleware to validate request payloads using Zod schemas.
+ *
+ * @param {z.AnyZodObject} schema - The Zod schema to validate the request payload against.
+ * @param {'body' | 'params' | 'query'} type - The part of the request to validate: body, params, or query.
+ * @returns {(req: Request, res: Response, next: NextFunction) => Promise<void>} - A middleware function that validates the request payload and calls `next()` if valid.
+ * @throws {BadRequestError} - Throws an error if validation fails, with formatted error messages.
+ *
+ * @example
+ * const schema = z.object({ name: z.string() });
+ * app.post('/users', requestValidator(schema, 'body'), (req, res) => {
+ *   res.send('Valid request');
+ * });
+ */
+const requestValidator = (
+  schema: z.AnyZodObject,
+  type: 'body' | 'params' | 'query'
+): ((req: Request, res: Response, next: NextFunction) => Promise<void>) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
+    const requestPayload = req[type];
+    const parsed = schema.safeParse(requestPayload);
+
+    if (!parsed.success) {
+      throw new BadRequestError(
+        formatParsedZodError(parsed.error),
+        parsed.error.formErrors.fieldErrors
+      );
+    }
+
+    next();
+  };
+};
+
+const validateRequestQuery = (schema: z.AnyZodObject) => requestValidator(schema, 'query');
+const validateRequestID = requestValidator(objectIDSchema, 'params');
+
+export { validateRequestQuery, validateRequestID };
+export default requestValidator;
