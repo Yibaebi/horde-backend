@@ -9,6 +9,7 @@ const startDB = async () => {
     logger.info(`Connected to ${ENV.DATABASE_URL}...`);
   } catch (error) {
     logger.error(error);
+    process.exit(1);
   }
 };
 

@@ -17,7 +17,11 @@ const logger = createLogger({
   format: format.combine(format.label({ label: ENV.APP_NAME }), format.timestamp(), logFormat),
   transports: [
     new transports.Console(),
-    new transports.File({ filename: 'app.log', level: 'error', ...FILE_CONFIG }),
+    new transports.File({
+      filename: 'app.log',
+      level: 'error',
+      ...FILE_CONFIG,
+    }),
   ],
   exceptionHandlers: [
     new transports.Console(),

@@ -1,13 +1,18 @@
 import express from 'express';
+import { setupGracefulShutdown } from '@/utils/shutdown';
 import ENV from '@/config/env';
 import setupAppRoutes from '@/config/routes';
 import startDB from '@/config/db';
+import logger from '@/utils/logger';
 
 const app = express();
 
 startDB();
 setupAppRoutes(app);
 
-app.listen(ENV.PORT, () => console.log(`App is listening on PORT ${ENV.PORT}...`));
+const server = app.listen(ENV.PORT, () => {
+  logger.info(`App is listening on PORT ${ENV.PORT}...`);
+});
 
-export default app;
+// Kill server connection when hit with unhandled exception
+setupGracefulShutdown(server);
