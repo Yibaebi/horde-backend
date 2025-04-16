@@ -1,5 +1,5 @@
 import { Schema } from 'mongoose';
-import { IBudgetCategoryProps, IBudgetProps } from '@/types/models';
+import { IBudgetCategoryProps, IBudgetProps } from '@/types';
 
 // Context for Category Virtuals
 type BudgetCategoryContext = IBudgetCategoryProps & { parent(): IBudgetProps };

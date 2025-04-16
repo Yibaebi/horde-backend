@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { model, Schema } from 'mongoose';
 
-import { getCurrencySymbol } from '@/utils/currency';
-import { CurrencyOptions, type IBudgetDocument, type IBudgetProps } from '@/types/models';
+import { getCurrencySymbol } from '@/utils/helpers';
+import { CurrencyOptions, type IBudgetDocument, type IBudgetProps } from '@/types';
 import { categorySchema } from './category';
 
 // Budget Schema

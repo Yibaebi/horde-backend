@@ -18,8 +18,9 @@ const RUNTIME_ERRORS = [
 ];
 
 // Middleware function
-const errorHandler = (error: any, req: Request, res: Response, _next: NextFunction) => {
-  const errorMessage = error.message;
+const errorHandler = (err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  const error = err as { message?: string; name: string };
+  const errorMessage = error?.message;
 
   // Log error for debugging or monitoring
   logger.error(`[${req.method}] ${req.originalUrl} - ${errorMessage ?? error}`);

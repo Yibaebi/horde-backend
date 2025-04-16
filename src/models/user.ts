@@ -1,20 +1,16 @@
-import bcrypt from 'bcrypt';
 import { model, Schema } from 'mongoose';
-import { getCurrencySymbol } from '@/utils/currency';
-import { CurrencyOptions, DateFormat, Theme, TimeFormat, type IUserProps } from '@/types/models';
+import { getCurrencySymbol } from '@/utils/helpers';
+import { CurrencyOptions, DateFormat, Theme, TimeFormat, type IUserProps } from '@/types';
+import currencySymbols from '@/constants/currency-symbols';
 
 const userSchema = new Schema<IUserProps>(
   {
     fullName: { type: String, required: true, maxlength: 50 },
     email: { type: String, required: true },
-    password: { type: String, required: true },
+    password: { type: String },
     userName: {
       type: String,
-      maxlength: 40,
-      default: function () {
-        // Store first saved name as default user name
-        return this.fullName.split('')[0];
-      },
+      maxlength: 20,
     },
     preferences: {
       profileImage: String,
@@ -24,7 +20,7 @@ const userSchema = new Schema<IUserProps>(
       currencySym: {
         type: String,
         default: getCurrencySymbol(CurrencyOptions.NGN),
-        enum: Object.values(CurrencyOptions),
+        enum: Object.values(currencySymbols),
       },
       dateFormat: {
         type: String,
@@ -37,19 +33,18 @@ const userSchema = new Schema<IUserProps>(
         enum: Object.values(TimeFormat),
       },
     },
+    roles: {
+      type: [String],
+      required: true,
+      enum: {
+        values: ['user', 'admin'],
+        message: '{VALUE} is not a valid role',
+      },
+      default: ['user'],
+    },
   },
   { timestamps: true }
 );
-
-// Hash password before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-
-  next();
-});
 
 // User model
 const User = model('User', userSchema);

@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { IExpenseDocument, type IExpenseProps } from '@/types/models';
+import { IExpenseDocument, type IExpenseProps } from '@/types';
 
 // Expense Schema
 const expenseSchema = new Schema<IExpenseProps>(

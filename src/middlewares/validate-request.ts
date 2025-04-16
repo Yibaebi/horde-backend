@@ -2,7 +2,7 @@ import z from 'zod';
 import { type NextFunction, type Request, type Response } from 'express';
 
 import { BadRequestError } from '@/config/error';
-import { formatParsedZodError } from '@/utils/helpers';
+import { formatZodError, formatZodErrorToString } from '@/utils/response';
 import objectIDSchema from '@/schemas/object-id';
 
 /**
@@ -28,10 +28,7 @@ const requestValidator = (
     const parsed = schema.safeParse(requestPayload);
 
     if (!parsed.success) {
-      throw new BadRequestError(
-        formatParsedZodError(parsed.error),
-        parsed.error.formErrors.fieldErrors
-      );
+      throw new BadRequestError(formatZodErrorToString(parsed.error), formatZodError(parsed.error));
     }
 
     next();
@@ -39,7 +36,8 @@ const requestValidator = (
 };
 
 const validateRequestQuery = (schema: z.AnyZodObject) => requestValidator(schema, 'query');
+const validateRequestBody = (schema: z.AnyZodObject) => requestValidator(schema, 'body');
 const validateRequestID = requestValidator(objectIDSchema, 'params');
 
-export { validateRequestQuery, validateRequestID };
+export { validateRequestQuery, validateRequestID, validateRequestBody };
 export default requestValidator;
