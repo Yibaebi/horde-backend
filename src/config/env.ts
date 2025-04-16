@@ -9,7 +9,7 @@ const envSchema = z
   .object({
     PORT: z.union([z.string(), z.number()]),
     APP_NAME: z.string(),
-    NODE_ENV: z.enum(['development', 'test']),
+    NODE_ENV: z.enum(['development', 'test', 'production']),
     API_HOST: z.string(),
     CLIENT_BASE_URL: z.string(),
 
@@ -68,7 +68,7 @@ const development: EnvVariableSchema = {
   ),
 };
 
-// Production Environment Variables
+// Test Environment Variables
 const test: EnvVariableSchema = {
   ...baseENV,
   NODE_ENV: getEnvVariable('NODE_ENV', 'test'),
@@ -78,8 +78,15 @@ const test: EnvVariableSchema = {
   ),
 };
 
+// Test Environment Variables
+const production: EnvVariableSchema = {
+  ...baseENV,
+  NODE_ENV: getEnvVariable('NODE_ENV', 'production'),
+  HORDE_DATABASE_URL: getEnvVariable('HORDE_DATABASE_URL', ''),
+};
+
 // Parse current env configuration
-const possibleConfigs = { development, test };
+const possibleConfigs = { development, test, production };
 const ENV = possibleConfigs[baseENV.NODE_ENV];
 
 export { envSchema };
