@@ -18,10 +18,13 @@
       "@/schemas/*": ["schemas/*"],
       "@/controllers/*": ["controllers/*"],
       "@/constants/*": ["constants/*"],
+      "@/routes": ["routes/index"],
       "@/routes/*": ["routes/*"],
       "@/seeds/*": ["seeds/*"],
       "@/scripts/*": ["scripts/*"],
-      "@/types/*": ["types/*"]
+      "@/auth/*": ["auth/*"],
+      "@/services/*": ["services/*"],
+      "@/types": ["types/index"]
     }
   },
   "include": ["src", "package.json", "global.d.ts"]

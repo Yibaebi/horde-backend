@@ -5,9 +5,51 @@
  */
 
 /**
+ * Enum representing the theme preferences.
+ * - 'light' for light mode.
+ * - 'dark' for dark mode.
+ */
+export enum Theme {
+  Light = 'light',
+  Dark = 'dark',
+}
+
+/**
+ * Enum representing the date format preferences.
+ * - 'MM/DD/YYYY' for the month-first format.
+ * - 'DD/MM/YYYY' for the day-first format.
+ * - 'YYYY-MM-DD' for the ISO standard format.
+ */
+export enum DateFormat {
+  MM_DD_YYYY = 'MM/DD/YYYY',
+  DD_MM_YYYY = 'DD/MM/YYYY',
+  YYYY_MM_DD = 'YYYY-MM-DD',
+}
+
+/**
+ * Enum representing the time format preferences.
+ * - '12h' for the 12-hour format (AM/PM).
+ * - '24h' for the 24-hour format.
+ */
+export enum TimeFormat {
+  _12Hour = '12h',
+  _24Hour = '24h',
+}
+
+/**
+ * Enum representing the supported currency options.
+ */
+export enum CurrencyOptions {
+  NGN = 'NGN',
+  USD = 'USD',
+  EUR = 'EUR',
+  GBP = 'GBP',
+}
+
+/**
  * @property {number} status - HTTP status code of the error.
  * @property {string} message - A descriptive error message.
- * @property {ErrorDetail[]} [errors] - Array of validation errors (if applicable).
+ * @property {unknown} [errors] - Array of validation errors (if applicable).
  * @property {string} errorCode - The error identifier.
  * @property {boolean} success - Indicates failure (always false).
  * @property {Object} meta - Metadata related to the request.
@@ -17,7 +59,7 @@
 export type APIErrorResponse = {
   status: number;
   message?: string;
-  errorDetails: ErrorDetail[] | unknown; // Optional array of validation errors
+  errorDetails: unknown; // Optional array of validation errors
   errorCode: string;
   success: false;
   meta: {
@@ -44,3 +86,8 @@ export type APISuccessResponse<T> = {
     timestamp: string;
   };
 };
+
+/**
+ * @property {string} id - Conforms to a valid user id.
+ */
+export type UserJWTPayload = { id: string };

@@ -23,7 +23,7 @@ export default class ApplicationError extends Error {
     this.status = statusCode;
     this.message = message || 'Internal Server Error';
     this.errorCode = errorCode || 'INTERNAL_SERVER_ERROR';
-    this.errorDetails = error || {};
+    this.errorDetails = error || null;
     this.success = false;
 
     this.meta = {
@@ -36,7 +36,11 @@ export default class ApplicationError extends Error {
 }
 
 class BadRequestError extends ApplicationError {
-  constructor(message = 'Bad Request', error = {}, statusCode = RES_CODE_MAP.BAD_REQUEST) {
+  constructor(
+    message = 'Bad Request',
+    error: Record<string, string> | null = null,
+    statusCode = RES_CODE_MAP.BAD_REQUEST
+  ) {
     super(message, error, statusCode, 'BAD_REQUEST');
   }
 }
@@ -44,7 +48,7 @@ class BadRequestError extends ApplicationError {
 class InternalServerError extends ApplicationError {
   constructor(
     message = 'Internal Server Error',
-    error = {},
+    error = null,
     statusCode = RES_CODE_MAP.INTERNAL_SERVER_ERROR
   ) {
     super(message, error, statusCode, 'INTERNAL_SERVER_ERROR');
@@ -52,9 +56,19 @@ class InternalServerError extends ApplicationError {
 }
 
 class NotFoundError extends ApplicationError {
-  constructor(message = 'Resource not found', error = {}, statusCode = RES_CODE_MAP.NOT_FOUND) {
+  constructor(message = 'Resource not found', error = null, statusCode = RES_CODE_MAP.NOT_FOUND) {
     super(message, error, statusCode, 'NOT_FOUND');
   }
 }
 
-export { BadRequestError, InternalServerError, NotFoundError };
+class UnauthorizedError extends ApplicationError {
+  constructor(
+    message = 'Authentication required',
+    error = null,
+    statusCode = RES_CODE_MAP.UNAUTHORIZED
+  ) {
+    super(message, error, statusCode, 'UNAUTHORIZED');
+  }
+}
+
+export { BadRequestError, InternalServerError, NotFoundError, UnauthorizedError };

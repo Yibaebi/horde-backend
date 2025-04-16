@@ -1,4 +1,4 @@
-import { CurrencyOptions } from '@/types/models';
+import { CurrencyOptions } from '@/types';
 
 /**
  * Maps currency codes to their corresponding symbol representations.

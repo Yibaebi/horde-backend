@@ -1,9 +1,12 @@
+import 'module-alias/register';
+
 import express from 'express';
+
 import { setupGracefulShutdown } from '@/utils/shutdown';
-import ENV from '@/config/env';
 import setupAppRoutes from '@/config/routes';
 import startDB from '@/config/db';
 import logger from '@/utils/logger';
+import ENV from '@/config/env';
 
 const app = express();
 

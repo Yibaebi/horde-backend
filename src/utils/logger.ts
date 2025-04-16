@@ -2,7 +2,7 @@ import { format, createLogger, transports } from 'winston';
 import ENV from '@/config/env';
 
 // Log format
-const logFormat = format.printf(({ level, message, timestamp, key }) => {
+const logFormat = format.printf(({ level, message, timestamp }) => {
   return `${timestamp} [${level.toUpperCase()}]: ${message}`;
 });
 
