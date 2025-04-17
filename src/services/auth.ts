@@ -1,8 +1,12 @@
-import jwt from 'jsonwebtoken';
+import jwt, { type SignOptions } from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
+import dayjs from 'dayjs';
+import type { Request, Response } from 'express';
 
-import { NotFoundError } from '@/config/error';
+import { refreshTokenSchema } from '@/schemas/auth';
+import { formatSuccessResponse } from '@/utils/response';
+import { BadRequestError, NotFoundError } from '@/config/error';
 import RefreshToken from '@/models/refresh-token';
 import ENV from '@/config/env';
 import type { UserJWTPayload } from '@/types';
@@ -24,8 +28,25 @@ export const hashUserPass = async (password: string): Promise<string> => {
  * @param {UserJWTPayload} payload - The payload containing the user's unique identifier.
  * @returns {string} A signed JWT token.
  */
-export const createUserToken = (payload: UserJWTPayload): string =>
-  jwt.sign(payload, ENV.HORDE_JWT_SECRET, { expiresIn: '15m' });
+export const createUserToken = (
+  payload: UserJWTPayload,
+  options: SignOptions = { expiresIn: '1d' }
+): string => jwt.sign(payload, ENV.HORDE_JWT_SECRET, options);
+
+/**
+ * Verifies a JWT token using the application's secret key.
+ *
+ * @param {string} token - The JWT token to verify.
+ * @returns {string | jwt.JwtPayload} The decoded token if valid.
+ * @throws {jwt.JsonWebTokenError} If the token is invalid or verification fails.
+ */
+export const verifyUserToken = (token: string): string | jwt.JwtPayload => {
+  try {
+    return jwt.verify(token, ENV.HORDE_JWT_SECRET);
+  } catch (error) {
+    throw new BadRequestError('Invalid or expired token.', error as object);
+  }
+};
 
 /**
  * Generates a temporary authorization code based on user ID and token.
@@ -35,7 +56,7 @@ export const createUserToken = (payload: UserJWTPayload): string =>
  * @returns {string} A unique temporary authorization code.
  */
 export const generateTempAuthCode = (userId: string, token: string): string => {
-  const random = crypto.randomBytes(16).toString('hex');
+  const random = crypto.randomBytes(40).toString('hex');
   const hash = crypto.createHash('sha256').update(`${userId}:${token}:${random}`).digest('hex');
 
   return hash.slice(0, 20); // You can customize the length
@@ -63,7 +84,7 @@ export const generateRefreshToken = async (userId: string) => {
 export const verifyRefreshToken = async (token: string) => {
   const refreshToken = await RefreshToken.findOne({
     token,
-    expiryDate: { $gt: new Date() },
+    expiryDate: { $gt: dayjs().toDate() },
     isRevoked: false,
   });
 
@@ -72,4 +93,19 @@ export const verifyRefreshToken = async (token: string) => {
   }
 
   return refreshToken.userId;
+};
+
+// Refresh token
+export const refreshUserToken = async (req: Request, res: Response) => {
+  const { refreshToken } = refreshTokenSchema.parse(req.body);
+
+  const userId = await verifyRefreshToken(refreshToken);
+  const accessToken = createUserToken({ id: String(userId) });
+
+  res.json(
+    formatSuccessResponse({
+      message: 'New Token Generated successfully.',
+      data: { accessToken },
+    })
+  );
 };

@@ -30,8 +30,22 @@ export interface IUserProps {
   userName: string;
   email: string;
   password: string;
+  verified: boolean;
   preferences: IUserPreferences;
   createdAt?: Date;
   updatedAt?: Date;
   roles: Array<'admin' | 'user'>;
+}
+
+/**
+ * Interface for the pending user verification.
+ * Contains basic user information such as name, email, and password.
+ */
+export interface IPendingUserProps {
+  _id: string;
+  fullName: string;
+  email: string;
+  password: string;
+  createdAt: Date;
+  expiresAt: Date;
 }

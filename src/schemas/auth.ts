@@ -9,17 +9,39 @@ import z from 'zod';
  * @property {string} password - A strong password that must be at least 8 characters long and include:
  * an uppercase letter, a lowercase letter, a number, and a special character.
  */
-export const signupSchema = z.object({
-  fullName: z.string().max(50),
-  email: z.string().email('Enter a valid email address'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters long')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-      'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.'
-    ),
-});
+export const signupSchema = z
+  .object({
+    fullName: z.string().max(50),
+    email: z.string().email('Enter a valid email address'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters long')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.'
+      ),
+  })
+  .strict();
+
+/**
+ * Zod schema for validating user email address.
+ *
+ * @typedef {Object} emailConfirmationSchema
+ * @property {string} token - Token sent to user email for verification.
+ */
+export const emailConfirmationSchema = z
+  .object({
+    token: z.string(),
+  })
+  .strict();
+
+/**
+ * Zod schema for resending verification email for user email address.
+ *
+ * @typedef {Object} resendVerifEmailSchema
+ * @property {string} email - A valid email address.
+ */
+export const resendVerifEmailSchema = signupSchema.pick({ email: true }).strict();
 
 /**
  * Zod schema for validating user login data.
@@ -28,7 +50,7 @@ export const signupSchema = z.object({
  * @property {string} email - A valid email address.
  * @property {string} password - A valid password.
  */
-export const loginSchema = signupSchema.omit({ fullName: true });
+export const loginSchema = signupSchema.omit({ fullName: true }).strict();
 
 /**
  * Zod schema for validating the Google authorization code exchange.
@@ -36,9 +58,11 @@ export const loginSchema = signupSchema.omit({ fullName: true });
  * @typedef {Object} googleExchangeVerifySchema
  * @property {string} authCode - The authorization code received from Google's OAuth flow.
  */
-export const googleExchangeVerifySchema = z.object({
-  authCode: z.string(),
-});
+export const googleExchangeVerifySchema = z
+  .object({
+    authCode: z.string(),
+  })
+  .strict();
 
 /**
  * Zod schema for validating the refresh token request body.
@@ -46,6 +70,8 @@ export const googleExchangeVerifySchema = z.object({
  * @typedef {Object} refreshTokenSchema
  * @property {string} refreshToken - The current refresh token from client.
  */
-export const refreshTokenSchema = z.object({
-  refreshToken: z.string(),
-});
+export const refreshTokenSchema = z
+  .object({
+    refreshToken: z.string(),
+  })
+  .strict();

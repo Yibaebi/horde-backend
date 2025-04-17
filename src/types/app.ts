@@ -79,7 +79,7 @@ export type APIErrorResponse = {
 export type APISuccessResponse<T> = {
   status: number;
   message?: string;
-  data: T;
+  data: T | null;
   success: true;
   meta: {
     requestID: string;

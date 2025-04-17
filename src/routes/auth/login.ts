@@ -13,17 +13,17 @@ const loginRouter = Router();
 
 loginRouter.post('/', validateRequestBody(loginSchema), async (req: Request, res: Response) => {
   const loginData = loginSchema.parse(req.body);
-  const badReqError = new BadRequestError('Invalid credentials!');
+  const invalidCredError = new BadRequestError('Invalid credentials!');
 
   // Check for existing user
   const user = await User.findOne({ email: loginData.email }).lean();
 
-  if (!user) throw badReqError;
+  if (!user) throw invalidCredError;
 
   const { password, ...userProps } = user;
   const passIsValid = await bcrypt.compare(loginData.password, password);
 
-  if (!passIsValid) throw badReqError;
+  if (!passIsValid) throw invalidCredError;
 
   // Create tokens
   const userId = user._id;

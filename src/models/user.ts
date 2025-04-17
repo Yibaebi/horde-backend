@@ -8,10 +8,8 @@ const userSchema = new Schema<IUserProps>(
     fullName: { type: String, required: true, maxlength: 50 },
     email: { type: String, required: true },
     password: { type: String },
-    userName: {
-      type: String,
-      maxlength: 20,
-    },
+    userName: { type: String, maxlength: 20 },
+    verified: { type: Boolean, default: false },
     preferences: {
       profileImage: String,
       theme: { type: String, default: Theme.Light },

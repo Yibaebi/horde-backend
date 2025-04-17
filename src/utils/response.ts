@@ -16,12 +16,12 @@ import { type APIErrorResponse, type APISuccessResponse } from '@/types';
 interface IFormatSuccessResponse<T> {
   status?: number;
   message: string;
-  data: T;
+  data?: T | null;
 }
 
 export const formatSuccessResponse = <T>({
   status = RES_CODE_MAP.OK,
-  data,
+  data = null,
   message,
 }: IFormatSuccessResponse<T>): APISuccessResponse<T> => ({
   status,
