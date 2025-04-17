@@ -1,10 +1,9 @@
 import { formatTemplate, loadTemplate, type EmailScopes } from '@/utils/email';
 import mailer, { mailerAuthConfig } from '@/config/email';
+import clientRoutes from '@/constants/client-routes';
 import logger from '@/utils/logger';
-import ENV from '@/config/env';
 import type { IUserProps } from '@/types';
 
-const baseUrl = ENV.CLIENT_BASE_URL;
 const supportEmail = String(mailerAuthConfig.user);
 const currentYear = new Date().getFullYear();
 
@@ -14,9 +13,9 @@ export const sendVerificationEmail = async (email: string, token: string) => {
 
   // format email template
   const html = formatTemplate<EmailScopes, 'email-verification'>(template, {
-    verificationLink: `${baseUrl}/auth/verify-email?token=${token}`,
     supportEmail,
     currentYear,
+    verificationLink: `${clientRoutes.AUTH.VERIFY_EMAIL}?token=${token}`,
   });
 
   // Send email
@@ -34,24 +33,19 @@ export const sendVerificationEmail = async (email: string, token: string) => {
 
 // Sign up success email
 export const sendSignupSuccessEmail = async (user: IUserProps) => {
-  const userPref = user.preferences;
-  const userEmail = user.email;
-
   // Template
-  const template = loadTemplate('auth', 'signup-success');
+  const template = loadTemplate('auth', 'welcome');
 
   // format email template
-  const html = formatTemplate<EmailScopes, 'signup-success'>(template, {
-    supportEmail,
+  const html = formatTemplate<EmailScopes, 'welcome'>(template, {
     fullName: user.fullName,
     currentYear,
-    currencySym: String(userPref.currencySym),
-    dateFormat: String(userPref.dateFormat),
-    timeFormat: String(userPref.timeFormat),
-    theme: String(userPref.theme),
+    dashboardUrl: clientRoutes.DASHBOARD.HOME,
   });
 
   // Send email
+  const userEmail = user.email;
+
   const info = await mailer.sendMail({
     from: supportEmail,
     to: userEmail,

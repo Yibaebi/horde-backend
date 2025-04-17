@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Welcome to Horde</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background-color: #f4f4f4;
+        color: #333;
+      }
+
+      .email-container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+
+      .header {
+        background-color: #6057ff;
+        color: #ffffff;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .content h2 {
+        color: #6057ff;
+        font-size: 22px;
+        margin-top: 0;
+      }
+
+      .content p {
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      .button {
+        display: inline-block;
+        margin-top: 20px;
+        background-color: #6057ff;
+        color: #ffffff !important;
+        padding: 12px 24px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      .footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 14px;
+        color: #888;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>Welcome to Horde 🎉</h1>
+      </div>
+      <div class="content">
+        <h2>Hi {{fullName}},</h2>
+        <p>
+          We're thrilled to have you on board. Horde is your all-in-one budgeting companion designed
+          to help you manage your money smarter, set goals, and gain financial clarity.
+        </p>
+        <p>Ready to dive in? Start exploring your dashboard and personalize your preferences.</p>
+
+        <a href="{{dashboardUrl}}" class="button">Go to Dashboard</a>
+      </div>
+
+      <div class="footer">&copy; {{currentYear}} Horde. All rights reserved.</div>
+    </div>
+  </body>
+</html>

@@ -19,6 +19,7 @@ import type { UserJWTPayload } from '@/types';
  */
 export const hashUserPass = async (password: string): Promise<string> => {
   const salt = await bcrypt.genSalt(10);
+
   return await bcrypt.hash(password, salt);
 };
 
@@ -59,7 +60,7 @@ export const generateTempAuthCode = (userId: string, token: string): string => {
   const random = crypto.randomBytes(40).toString('hex');
   const hash = crypto.createHash('sha256').update(`${userId}:${token}:${random}`).digest('hex');
 
-  return hash.slice(0, 20); // You can customize the length
+  return hash.slice(0, 20);
 };
 
 // Generate refresh token
@@ -89,7 +90,7 @@ export const verifyRefreshToken = async (token: string) => {
   });
 
   if (!refreshToken) {
-    throw new NotFoundError('Invalid or expired refresh token');
+    throw new NotFoundError('Invalid or expired refresh token.');
   }
 
   return refreshToken.userId;

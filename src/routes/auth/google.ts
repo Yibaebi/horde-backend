@@ -4,10 +4,13 @@ import passport from 'passport';
 import { createUserToken, generateRefreshToken, generateTempAuthCode } from '@/services/auth';
 import { validateRequestQuery } from '@/middlewares/validate-request';
 import { googleExchangeVerifySchema } from '@/schemas/auth';
-import { UnauthorizedError } from '@/config/error';
+import { BadRequestError } from '@/config/error';
 import { formatSuccessResponse } from '@/utils/response';
+import { sendSignupSuccessEmail } from '@/services/email/auth';
 import cacheService from '@/config/redis';
+import User from '@/models/user';
 import ENV from '@/config/env';
+import RES_CODE_MAP from '@/constants/res-code-map';
 import type { IUserProps } from '@/types';
 
 const googleAuthRouter = Router();
@@ -24,12 +27,12 @@ googleAuthRouter.get(
     const user = req.user as IUserProps;
     const userId = user._id;
 
-    // Temporary code to send to frontend
-    const token = createUserToken({ id: userId });
+    // Temporary code for client side validation
+    const accessToken = createUserToken({ id: userId });
     const refreshToken = await generateRefreshToken(userId);
 
-    const tempCode = generateTempAuthCode(userId, token);
-    const userInfo = JSON.stringify({ user, token, refreshToken });
+    const tempCode = generateTempAuthCode(userId, accessToken);
+    const userInfo = JSON.stringify({ user, accessToken, refreshToken });
 
     // Store temp code with the user info in Redis/cache with short expiry (5 min)
     await cacheService.set(tempCode, userInfo, 60 * 5);
@@ -47,10 +50,41 @@ googleAuthRouter.get(
 
     // Get token from cache using the code
     const cachedUserInfo = await cacheService.get(authCode);
-    const userInfo = JSON.parse(String(cachedUserInfo));
+
+    const userInfo = JSON.parse(String(cachedUserInfo)) as {
+      user: IUserProps;
+      accessToken: string;
+      refreshToken: string;
+    } | null;
 
     if (!userInfo) {
-      throw new UnauthorizedError('Invalid or expired authorization code.');
+      throw new BadRequestError('Invalid or expired authorization code.');
+    }
+
+    const { user, refreshToken, accessToken } = userInfo;
+    const resMeta = { accessToken, refreshToken };
+
+    // Create new user if a pending user
+    if (!user.roles) {
+      const newUser = new User({ ...user, roles: ['user'] });
+
+      await newUser.save();
+      await sendSignupSuccessEmail(newUser);
+
+      // Delete auth code
+      await cacheService.delete(authCode);
+
+      // Return the token and user data
+      return res.status(RES_CODE_MAP.CREATED).send(
+        formatSuccessResponse({
+          message: 'Account created successfully!',
+          status: RES_CODE_MAP.CREATED,
+          data: {
+            user: newUser,
+            meta: resMeta,
+          },
+        })
+      );
     }
 
     // Delete auth code
@@ -59,13 +93,10 @@ googleAuthRouter.get(
     // Return the token and user data
     res.send(
       formatSuccessResponse({
-        message: 'Login Successful',
+        message: 'Login Successful.',
         data: {
-          ...(userInfo as {
-            user: IUserProps;
-            token: string;
-            refreshToken: string;
-          }),
+          user: user,
+          meta: resMeta,
         },
       })
     );

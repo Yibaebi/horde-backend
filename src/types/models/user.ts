@@ -1,3 +1,4 @@
+import { Document } from 'mongoose';
 import { CurrencyOptions, DateFormat, Theme, TimeFormat } from '../app';
 
 /**
@@ -30,7 +31,6 @@ export interface IUserProps {
   userName: string;
   email: string;
   password: string;
-  verified: boolean;
   preferences: IUserPreferences;
   createdAt?: Date;
   updatedAt?: Date;
@@ -44,6 +44,7 @@ export interface IUserProps {
 export interface IPendingUserProps {
   _id: string;
   fullName: string;
+  userName?: string;
   email: string;
   password: string;
   createdAt: Date;

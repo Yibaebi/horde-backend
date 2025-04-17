@@ -2,8 +2,10 @@ import { Strategy } from 'passport-google-oauth20';
 import passport from 'passport';
 
 import { BadRequestError } from '@/config/error';
+import PendingUser from '@/models/pending-user';
 import User from '@/models/user';
 import ENV from '@/config/env';
+import dayjs from 'dayjs';
 
 const initializeGoogleOAuthStrategy = () => {
   passport.use(
@@ -31,13 +33,23 @@ const initializeGoogleOAuthStrategy = () => {
           return done(null, existingUser);
         }
 
-        // No existing user found, create new user
-        const newUser = new User({
+        // Check for pending user
+        const pendingUser = await PendingUser.findOne({
+          email: googleEmail,
+          expiresAt: { $gt: dayjs().toDate() },
+        });
+
+        if (pendingUser) {
+          req.user = pendingUser;
+
+          return done(null, pendingUser);
+        }
+
+        // No existing pending user found.
+        const newUser = new PendingUser({
           email: googleEmail,
           fullName: profile.displayName,
           userName: profile.username ?? '',
-          password: '',
-          verified: true,
         });
 
         await newUser.save();

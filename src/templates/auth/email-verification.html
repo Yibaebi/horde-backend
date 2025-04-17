@@ -23,6 +23,7 @@
         padding: 40px;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%236057FF' fill-opacity='0.1'%3E%3Ccircle cx='5' cy='5' r='2'/%3E%3Ccircle cx='30' cy='10' r='1.5'/%3E%3Ccircle cx='50' cy='50' r='2'/%3E%3Ccircle cx='15' cy='45' r='1.5'/%3E%3Ccircle cx='40' cy='25' r='1.2'/%3E%3C/g%3E%3C/svg%3E");
       }
 
       h2 {
@@ -45,7 +46,7 @@
         border-radius: 6px;
         font-weight: bold;
         margin: 20px 0px;
-        max-width: 140px;
+        max-width: 180px;
       }
 
       .footer {
@@ -70,26 +71,22 @@
   </head>
   <body>
     <div class="container">
-      <h2>Confirm Your Email Address</h2>
-      <p>
-        Hello! Thanks for signing up for Horde. To get started, please confirm your email address by
-        clicking the button below:
-      </p>
+      <h2>Hey There!</h2>
+      <p>Thanks for signing up to Horde 👋</p>
+      <p>Please verify your email address to activate your account.</p>
 
       <p>
         <a href="{{verificationLink}}" class="button">Verify Email</a>
       </p>
 
-      <p>If the button doesn’t work, you can also copy and paste this link into your browser:</p>
-      <p><a href="{{verificationLink}}" style="color: #0d6efd">{{verificationLink}}</a></p>
+      <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+      <p><a href="{{verificationLink}}" style="color: #6057ff">{{verificationLink}}</a></p>
 
       <p>This link will expire in 24 hours for security reasons.</p>
 
-      <p>If you didn’t sign up for an account, no action is needed — just ignore this email.</p>
+      <p>If you didn’t sign up for Horde, no action is needed.</p>
 
-      <p>
-        Need help? Our team is here for you: <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>
-      </p>
+      <p>Need help? Reach out to us at <a href="mailto:{{supportEmail}}">{{supportEmail}}</a></p>
 
       <div class="footer">&copy; {{currentYear}} Horde. All rights reserved.</div>
     </div>

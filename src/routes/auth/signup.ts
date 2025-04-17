@@ -13,7 +13,7 @@ import { validateRequestBody } from '@/middlewares/validate-request';
 import { formatSuccessResponse } from '@/utils/response';
 import { emailConfirmationSchema, resendVerifEmailSchema, signupSchema } from '@/schemas/auth';
 import { BadRequestError } from '@/config/error';
-import { sendSignupSuccessEmail, sendVerificationEmail } from '@/services/email';
+import { sendSignupSuccessEmail, sendVerificationEmail } from '@/services/email/auth';
 
 import PendingUser from '@/models/pending-user';
 import User from '@/models/user';
@@ -50,13 +50,7 @@ signupRouter.post('/', validateRequestBody(signupSchema), async (req: Request, r
 
   // Create new user
   const hashedPassword = await hashUserPass(userInfo.password);
-
-  const pendingUser = new PendingUser({
-    ...userInfo,
-    password: hashedPassword,
-    createdAt: dayjs().toDate(),
-    expiresAt: dayjs().add(1, 'day').toDate(),
-  });
+  const pendingUser = new PendingUser({ ...userInfo, password: hashedPassword });
 
   await pendingUser.save();
 

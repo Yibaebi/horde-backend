@@ -15,13 +15,9 @@ export type EmailScopeTemplates = {
       supportEmail: string;
       currentYear: number;
     };
-    'signup-success': {
+    welcome: {
       fullName: string;
-      currencySym: string;
-      dateFormat: string;
-      timeFormat: string;
-      theme: string;
-      supportEmail: string;
+      dashboardUrl: string;
       currentYear: number;
     };
   };
