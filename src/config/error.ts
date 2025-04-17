@@ -38,7 +38,7 @@ export default class ApplicationError extends Error {
 class BadRequestError extends ApplicationError {
   constructor(
     message = 'Bad Request',
-    error: Record<string, string> | null = null,
+    error: Record<string, string> | object | null = null,
     statusCode = RES_CODE_MAP.BAD_REQUEST
   ) {
     super(message, error, statusCode, 'BAD_REQUEST');

@@ -9,8 +9,8 @@ const initializeGoogleOAuthStrategy = () => {
   passport.use(
     new Strategy(
       {
-        clientID: ENV.HORDE_GOOGLE_CLIENT_ID,
-        clientSecret: ENV.HORDE_GOOGLE_CLIENT_SECRET,
+        clientID: ENV.HORDE_GOOGLE_AUTH_CLIENT_ID,
+        clientSecret: ENV.HORDE_GOOGLE_AUTH_CLIENT_SECRET,
         callbackURL: `${ENV.API_HOST}/api/v1/auth/google/callback`,
         scope: ['email', 'profile'],
         passReqToCallback: true,
@@ -37,6 +37,7 @@ const initializeGoogleOAuthStrategy = () => {
           fullName: profile.displayName,
           userName: profile.username ?? '',
           password: '',
+          verified: true,
         });
 
         await newUser.save();
