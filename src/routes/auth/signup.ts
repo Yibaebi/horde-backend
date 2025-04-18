@@ -128,13 +128,6 @@ signupRouter.post(
 
     if (pendingUser) {
       await sendVerificationEmail(email, createUserToken({ id: pendingUser._id }));
-
-      return res.json(
-        formatSuccessResponse({
-          message: 'Verification email sent successfully',
-          data: null,
-        })
-      );
     }
 
     return res.json(

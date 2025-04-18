@@ -43,7 +43,7 @@ export const createUserToken = (
  */
 export const verifyUserToken = (token: string): string | jwt.JwtPayload => {
   try {
-    return jwt.verify(token, ENV.HORDE_JWT_SECRET);
+    return jwt.verify(token, ENV.HORDE_JWT_SECRET) as UserJWTPayload;
   } catch (error) {
     throw new BadRequestError('Invalid or expired token.', error as object);
   }
@@ -56,11 +56,14 @@ export const verifyUserToken = (token: string): string | jwt.JwtPayload => {
  * @param {string} token - The JWT token associated with the user.
  * @returns {string} A unique temporary authorization code.
  */
-export const generateTempAuthCode = (userId: string, token: string): string => {
+export const generateTempAuthCode = (...args: string[]): string => {
   const random = crypto.randomBytes(40).toString('hex');
-  const hash = crypto.createHash('sha256').update(`${userId}:${token}:${random}`).digest('hex');
+  const hash = crypto
+    .createHash('sha256')
+    .update(`${args.join(':')}:${random}`)
+    .digest('hex');
 
-  return hash.slice(0, 20);
+  return hash.slice(0, 40);
 };
 
 // Generate refresh token
@@ -106,7 +109,7 @@ export const refreshUserToken = async (req: Request, res: Response) => {
   res.json(
     formatSuccessResponse({
       message: 'New Token Generated successfully.',
-      data: { accessToken },
+      data: { accessToken, refreshToken },
     })
   );
 };

@@ -20,6 +20,17 @@ export type EmailScopeTemplates = {
       dashboardUrl: string;
       currentYear: number;
     };
+    'pass-reset': {
+      fullName: string;
+      resetLink: string;
+      supportEmail: string;
+      currentYear: number;
+    };
+    'pass-reset-confirm': {
+      fullName: string;
+      supportEmail: string;
+      currentYear: number;
+    };
   };
 };
 

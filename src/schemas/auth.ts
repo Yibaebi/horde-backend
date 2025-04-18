@@ -17,7 +17,7 @@ export const signupSchema = z
       .string()
       .min(8, 'Password must be at least 8 characters long')
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/,
         'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.'
       ),
   })
@@ -51,6 +51,25 @@ export const resendVerifEmailSchema = signupSchema.pick({ email: true }).strict(
  * @property {string} password - A valid password.
  */
 export const loginSchema = signupSchema.omit({ fullName: true }).strict();
+
+/**
+ * Zod schema for resetting password.
+ *
+ * @typedef {Object} passwordResetSchema
+ * @property {string} email - A valid email address.
+ */
+export const passwordResetSchema = signupSchema.pick({ email: true }).strict();
+
+/**
+ * Zod schema for confirming password reset.
+ *
+ * @property {string} token - Valid user token.
+ * @property {string} password - A valid password.
+ */
+export const resetPasswordSchema = signupSchema
+  .pick({ password: true })
+  .extend({ token: z.string() })
+  .strict();
 
 /**
  * Zod schema for validating the Google authorization code exchange.

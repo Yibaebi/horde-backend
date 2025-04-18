@@ -7,6 +7,14 @@ import type { IUserProps } from '@/types';
 const supportEmail = String(mailerAuthConfig.user);
 const currentYear = new Date().getFullYear();
 
+// Email body config
+const getEmailBody = (email: string, html: string, subject: string) => ({
+  from: supportEmail,
+  to: email,
+  subject,
+  html,
+});
+
 // Send verification email
 export const sendVerificationEmail = async (email: string, token: string) => {
   const template = loadTemplate('auth', 'email-verification');
@@ -19,12 +27,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
   });
 
   // Send email
-  const info = await mailer.sendMail({
-    from: supportEmail,
-    to: email,
-    subject: 'Verify Your Email Address',
-    html,
-  });
+  const info = await mailer.sendMail(getEmailBody(email, html, 'Password Reset Request.'));
 
   logger.info(`Verification Email Sent: ${info.messageId} - ${email}`);
 
@@ -45,15 +48,52 @@ export const sendSignupSuccessEmail = async (user: IUserProps) => {
 
   // Send email
   const userEmail = user.email;
-
-  const info = await mailer.sendMail({
-    from: supportEmail,
-    to: userEmail,
-    subject: 'Welcome to Horde!',
-    html,
-  });
+  const info = await mailer.sendMail(getEmailBody(userEmail, html, 'Welcome to Horde!'));
 
   logger.info(`Signup email sent: ${info.messageId} - ${userEmail}`);
+
+  return info;
+};
+
+// Send Reset Pass Mail
+export const sendPassResetEmail = async (user: IUserProps, token: string) => {
+  // Template
+  const template = loadTemplate('auth', 'pass-reset');
+
+  // format email template
+  const html = formatTemplate<EmailScopes, 'pass-reset'>(template, {
+    supportEmail,
+    currentYear,
+    fullName: user.fullName,
+    resetLink: `${clientRoutes.AUTH.PASS_RESET}?token=${token}`,
+  });
+
+  // Send email
+  const userEmail = user.email;
+  const info = await mailer.sendMail(getEmailBody(userEmail, html, 'Password Reset'));
+
+  logger.info(`Password reset email sent: ${info.messageId} - ${userEmail}`);
+
+  return info;
+};
+
+// Send Reset Pass Success mail
+export const sendPassResetSuccessEmail = async (user: IUserProps) => {
+  // Template
+  const template = loadTemplate('auth', 'pass-reset-confirm');
+
+  // format email template
+  const html = formatTemplate<EmailScopes, 'pass-reset-confirm'>(template, {
+    supportEmail,
+    currentYear,
+    fullName: user.fullName,
+  });
+
+  // Send email
+  const userEmail = user.email;
+  const info = await mailer.sendMail(getEmailBody(userEmail, html, 'Password Reset Successful'));
+
+  logger.info(`Password reset success email sent: ${info.messageId} - ${userEmail}`);
 
   return info;
 };

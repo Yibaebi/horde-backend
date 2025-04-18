@@ -12,6 +12,7 @@ import User from '@/models/user';
 import ENV from '@/config/env';
 import RES_CODE_MAP from '@/constants/res-code-map';
 import type { IUserProps } from '@/types';
+import clientRoutes from '@/constants/client-routes';
 
 const googleAuthRouter = Router();
 
@@ -38,7 +39,7 @@ googleAuthRouter.get(
     await cacheService.set(tempCode, userInfo, 60 * 5);
 
     // Redirect to exchange route
-    res.redirect(`${ENV.CLIENT_BASE_URL}/auth/callback?authCode=${tempCode}`);
+    res.redirect(`${clientRoutes.AUTH.GOOGLE_AUTH_AUTHORIZE}?authCode=${tempCode}`);
   }
 );
 
@@ -120,7 +121,7 @@ googleAuthRouter.get('/failure', (req, res) => {
     res.clearCookie('google_auth_state');
   }
 
-  const redirectUrl = new URL(`${ENV.CLIENT_BASE_URL}/auth/google/error`);
+  const redirectUrl = new URL(clientRoutes.AUTH.GOOGLE_AUTH_ERROR_REDIRECT);
 
   redirectUrl.searchParams.append('message', String(errorMessage));
   redirectUrl.searchParams.append('code', String(errorCode));

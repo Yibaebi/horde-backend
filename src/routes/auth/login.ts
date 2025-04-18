@@ -27,13 +27,13 @@ loginRouter.post('/', validateRequestBody(loginSchema), async (req: Request, res
 
   // Create tokens
   const userId = user._id;
-  const token = createUserToken({ id: userId });
+  const accessToken = createUserToken({ id: userId });
   const refreshToken = await generateRefreshToken(userId);
 
   res.send(
     formatSuccessResponse({
       message: 'Login Successful.',
-      data: { token, refreshToken, user: userProps, expiresIn: 900 },
+      data: { user: userProps, meta: { accessToken, refreshToken, expiresIn: 900 } },
     })
   );
 });
