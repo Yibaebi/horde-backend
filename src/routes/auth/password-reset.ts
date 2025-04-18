@@ -2,18 +2,29 @@ import { Router } from 'express';
 import { validateRequestBody } from '@/middlewares/validate-request';
 import { passwordResetSchema, resetPasswordSchema } from '@/schemas/auth';
 import { generateTempAuthCode, hashUserPass } from '@/services/auth';
-import { sendPassResetEmail, sendPassResetSuccessEmail } from '@/services/email/auth';
+import { sendPassResetSuccessEmail } from '@/services/email/auth';
+import { createCustomLimiter } from '@/middlewares/rate-limiter';
 import { formatSuccessResponse } from '@/utils/response';
 import { BadRequestError } from '@/config/error';
+
 import PendingUser from '@/models/pending-user';
 import User from '@/models/user';
 import ResetPassToken from '@/models/reset-pass-token';
+import ENV from '@/config/env';
 
 const passResetRouter = Router();
+const RESET_LIMIT_RETRY_TIMER = 5 * 60 * 1000;
+const RESET_LIMIT = 1;
 
 // Password reset email
 passResetRouter.post(
   '/password-reset',
+  createCustomLimiter(
+    RESET_LIMIT_RETRY_TIMER,
+    RESET_LIMIT,
+    'Too many password reset attempts. Please try again later.',
+    { skipIf: [() => ENV.NODE_ENV === 'development'] }
+  ),
   validateRequestBody(passwordResetSchema),
   async (req, res) => {
     const { email } = passwordResetSchema.parse(req.body);
@@ -34,7 +45,7 @@ passResetRouter.post(
       const resetTokenModel = new ResetPassToken({ userId, token });
 
       await resetTokenModel.save();
-      await sendPassResetEmail(user, token);
+      // await sendPassResetEmail(user, token);
     }
 
     return res.json(

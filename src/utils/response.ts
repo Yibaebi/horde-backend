@@ -44,7 +44,7 @@ export const formatSuccessResponse = <T>({
  */
 
 interface IFormatError {
-  status: number;
+  status?: number;
   message?: string;
   errorCode: keyof typeof RES_CODE_MAP;
   error: unknown;
@@ -56,7 +56,7 @@ export const formatErrorResponse = ({
   error,
   errorCode,
 }: IFormatError): APIErrorResponse => ({
-  status,
+  status: errorCode ? RES_CODE_MAP[errorCode] : status || RES_CODE_MAP.INTERNAL_SERVER_ERROR,
   message,
   errorCode: errorCode,
   errorDetails: error,

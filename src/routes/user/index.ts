@@ -4,14 +4,7 @@ import type { IUserProps } from '@/types';
 
 const userRouter = Router();
 
-/**
- * GET /me
- *
- * Retrieves the currently authenticated user's information.
- *
- * @route GET /me
- * @returns {Object} 200 - A success message with the user data
- */
+// Retrieves the currently authenticated user's information.
 userRouter.get('/me', (req, res) =>
   res.json(
     formatSuccessResponse({
