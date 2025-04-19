@@ -14,7 +14,7 @@ const initializeJWTAuthStrategy = () => {
       },
       async (jwt_payload: UserJWTPayload, done) => {
         try {
-          const user = await User.findById(jwt_payload.id).select('-password');
+          const user = await User.findById(jwt_payload.id);
           done(null, user as IUserProps);
         } catch (error) {
           done(error, null);

@@ -2,26 +2,27 @@ import { Router } from 'express';
 import { validateRequestBody } from '@/middlewares/validate-request';
 import { passwordResetSchema, resetPasswordSchema } from '@/schemas/auth';
 import { generateTempAuthCode, hashUserPass } from '@/services/auth';
-import { sendPassResetSuccessEmail } from '@/services/email/auth';
-import { createCustomLimiter } from '@/middlewares/rate-limiter';
+import { sendPassResetEmail, sendPassResetSuccessEmail } from '@/services/email/auth';
 import { formatSuccessResponse } from '@/utils/response';
+import { createCustomLimiter } from '@/middlewares/rate-limiter';
 import { BadRequestError } from '@/config/error';
 
 import PendingUser from '@/models/pending-user';
+import standardRateLimiters from '@/middlewares/rate-limiter';
 import User from '@/models/user';
 import ResetPassToken from '@/models/reset-pass-token';
 import ENV from '@/config/env';
 
 const passResetRouter = Router();
-const RESET_LIMIT_RETRY_TIMER = 5 * 60 * 1000;
-const RESET_LIMIT = 1;
+const RESET_RETRY_TIMER = 24 * 60 * 1000;
+const RESET_REQ_LIMIT = 2;
 
 // Password reset email
 passResetRouter.post(
   '/password-reset',
   createCustomLimiter(
-    RESET_LIMIT_RETRY_TIMER,
-    RESET_LIMIT,
+    RESET_RETRY_TIMER,
+    RESET_REQ_LIMIT,
     'Too many password reset attempts. Please try again later.',
     { skipIf: [() => ENV.NODE_ENV === 'development'] }
   ),
@@ -45,7 +46,7 @@ passResetRouter.post(
       const resetTokenModel = new ResetPassToken({ userId, token });
 
       await resetTokenModel.save();
-      // await sendPassResetEmail(user, token);
+      await sendPassResetEmail(user, token);
     }
 
     return res.json(
@@ -60,6 +61,7 @@ passResetRouter.post(
 // Password reset confirmation
 passResetRouter.post(
   '/reset-password',
+  standardRateLimiters.standard,
   validateRequestBody(resetPasswordSchema),
   async (req, res) => {
     const { token, password } = resetPasswordSchema.parse(req.body);

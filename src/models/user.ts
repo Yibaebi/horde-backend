@@ -7,8 +7,14 @@ const userSchema = new Schema<IUserProps>(
   {
     fullName: { type: String, required: true, maxlength: 50 },
     email: { type: String, required: true },
-    password: { type: String },
-    userName: { type: String, maxlength: 20 },
+    password: { type: String, select: false },
+
+    userName: {
+      type: String,
+      maxlength: 15,
+      match: [/^[A-Za-z_]+$/, 'Username can only contain letters and underscores.'],
+    },
+
     preferences: {
       profileImage: String,
       theme: { type: String, default: Theme.Light },
@@ -30,6 +36,7 @@ const userSchema = new Schema<IUserProps>(
         enum: Object.values(TimeFormat),
       },
     },
+
     roles: {
       type: [String],
       required: true,

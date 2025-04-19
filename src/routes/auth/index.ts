@@ -10,7 +10,7 @@ import signupRouter from './signup';
 import googleAuthRouter from './google';
 import passResetRouter from './password-reset';
 
-const authRouter = Router();
+export const authRouter = Router();
 
 authRouter.use('/login', standardRateLimiters.auth, loginRouter);
 authRouter.use('/signup', signupRouter);

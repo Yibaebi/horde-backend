@@ -16,7 +16,7 @@ loginRouter.post('/', validateRequestBody(loginSchema), async (req: Request, res
   const invalidCredError = new BadRequestError('Invalid credentials!');
 
   // Check for existing user
-  const user = await User.findOne({ email: loginData.email }).lean();
+  const user = await User.findOne({ email: loginData.email }).lean().select('+password');
 
   if (!user) throw invalidCredError;
 

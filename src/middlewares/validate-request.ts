@@ -20,7 +20,7 @@ import objectIDSchema from '@/schemas/object-id';
  * });
  */
 const requestValidator = (
-  schema: z.AnyZodObject,
+  schema: z.ZodSchema,
   type: 'body' | 'params' | 'query'
 ): ((req: Request, res: Response, next: NextFunction) => Promise<void>) => {
   return async (req: Request, _res: Response, next: NextFunction) => {
@@ -35,8 +35,8 @@ const requestValidator = (
   };
 };
 
-const validateRequestQuery = (schema: z.AnyZodObject) => requestValidator(schema, 'query');
-const validateRequestBody = (schema: z.AnyZodObject) => requestValidator(schema, 'body');
+const validateRequestQuery = (schema: z.ZodSchema) => requestValidator(schema, 'query');
+const validateRequestBody = (schema: z.ZodSchema) => requestValidator(schema, 'body');
 const validateRequestID = requestValidator(objectIDSchema, 'params');
 
 export { validateRequestQuery, validateRequestID, validateRequestBody };

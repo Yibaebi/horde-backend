@@ -1,4 +1,3 @@
-import { Document } from 'mongoose';
 import { CurrencyOptions, DateFormat, Theme, TimeFormat } from '../app';
 
 /**

@@ -105,7 +105,7 @@ signupRouter.post(
       formatSuccessResponse({
         message: 'User Created Successfully.',
         data: {
-          user: _.omit(newUser.toObject(), 'password'),
+          user: newUser,
           meta: { accessToken, refreshToken, expiresIn: dayjs().add(23, 'hours').toDate() }, // One hour before actual expiry
         },
         status: CREATED,

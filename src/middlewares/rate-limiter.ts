@@ -105,7 +105,7 @@ export const createCustomLimiter = (
   windowMs: number,
   limit: number,
   errorMessage: string,
-  skipConditions: SkipOptions
+  skipConditions?: SkipOptions
 ) => limitRate(windowMs, limit, errorMessage, skipConditions);
 
 export default standardRateLimiters;

@@ -1,11 +1,12 @@
 import { Strategy } from 'passport-google-oauth20';
+import dayjs from 'dayjs';
 import passport from 'passport';
 
 import { BadRequestError } from '@/config/error';
 import PendingUser from '@/models/pending-user';
 import User from '@/models/user';
 import ENV from '@/config/env';
-import dayjs from 'dayjs';
+import { IUserProps } from '@/types';
 
 const initializeGoogleOAuthStrategy = () => {
   passport.use(
@@ -25,10 +26,10 @@ const initializeGoogleOAuthStrategy = () => {
         }
 
         // Check for existing user
-        const existingUser = await User.findOne({ email: googleEmail }).select('-password');
+        const existingUser = await User.findOne({ email: googleEmail });
 
         if (existingUser) {
-          req.user = existingUser;
+          req.user = existingUser as IUserProps;
 
           return done(null, existingUser);
         }
