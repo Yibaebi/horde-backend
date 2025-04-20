@@ -1,30 +1,85 @@
-import { Schema } from 'mongoose';
-import { IBudgetCategoryProps, IBudgetProps } from '@/types';
+import { model, Schema } from 'mongoose';
+import { IBudgetCategoryDocument, IBudgetCategoryProps, IBudgetProps } from '@/types';
+import ExpenseModel from './expense';
 
 // Context for Category Virtuals
-type BudgetCategoryContext = IBudgetCategoryProps & { parent(): IBudgetProps };
+type IBudgetCategoryContext = IBudgetCategoryDocument & { parent(): IBudgetProps };
 
 // Category Schema
 const categorySchema = new Schema<IBudgetCategoryProps>(
   {
-    key: { type: String, required: true },
+    key: { type: String, required: true, index: true },
     amountBudgeted: { type: Number, required: true },
     name: { type: String },
     amountSpent: { type: Number, default: 0 },
+    id: { type: String, select: false },
+    expensesStats: {
+      totalAmount: { type: Number, default: 0 },
+      count: { type: Number, default: 0 },
+      averageAmount: { type: Number, default: 0 },
+      minAmount: { type: Number, default: 0 },
+      maxAmount: { type: Number, default: 0 },
+    },
   },
   { timestamps: true }
 );
 
-categorySchema.virtual('overallCatContribution').get(function (this: BudgetCategoryContext) {
-  const budget = this.parent()?.amountBudgeted ?? 0;
-  const inNumber = this.amountBudgeted;
-  const inPercent = ((inNumber / budget) * 100).toFixed(2) + '%';
+categorySchema.virtual('budgetExpenseContribution').get(function (this: IBudgetCategoryContext) {
+  const budget = this.parent()?.amountSpent ?? 0;
+  const inNumber = this.amountSpent;
+  const percentContribution = (inNumber / budget) * 100;
+  const inPercent = !isNaN(percentContribution) ? percentContribution : 0 + '%';
 
   return { inPercent, inNumber };
 });
 
-categorySchema.virtual('budgetVariance').get(function (this: BudgetCategoryContext) {
+categorySchema.virtual('catBudgetVariance').get(function (this: IBudgetCategoryContext) {
   return this.amountBudgeted - this.amountSpent;
 });
 
+categorySchema.method('resetStats', async function () {
+  this.amountSpent = 0;
+
+  this.expensesStats = {
+    totalAmount: 0,
+    count: 0,
+    averageAmount: 0,
+    minAmount: 0,
+    maxAmount: 0,
+  };
+
+  return this;
+});
+
+categorySchema.method('recomputeExpensesStats', async function (this: IBudgetCategoryContext) {
+  const results = await ExpenseModel.aggregate([
+    { $match: { category: this._id } },
+    {
+      $group: {
+        _id: '$category',
+        totalAmount: { $sum: '$amount' },
+        count: { $sum: 1 },
+        averageAmount: { $avg: '$amount' },
+        minAmount: { $min: '$amount' },
+        maxAmount: { $max: '$amount' },
+      },
+    },
+  ]);
+
+  const stats = results[0] as IBudgetCategoryProps['expensesStats'] | undefined;
+
+  if (stats) {
+    this.amountSpent = stats.totalAmount;
+    this.expensesStats = stats;
+  } else {
+    this.resetStats();
+  }
+
+  return this;
+});
+
+// Category model
+const Category = model<IBudgetCategoryProps>('Category', categorySchema);
+
 export { categorySchema };
+export default Category;
