@@ -1,4 +1,5 @@
 import { Document, Types } from 'mongoose';
+import { PaginationMetaInfo } from 'types/app';
 
 /**
  * ===========================
@@ -9,11 +10,16 @@ import { Document, Types } from 'mongoose';
 export interface IExpenseProps {
   _id: Types.ObjectId;
   budget: Types.ObjectId;
+  user: Types.ObjectId;
+  category: Types.ObjectId;
+  amount: number;
   description: string;
-  categoryKey: string;
+  year: number;
+  month: number;
   expenseDate: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-export type IExpenseDocument = Document<unknown, object, IExpenseProps>;
+export type IExpenseDocument = Document<unknown, object, IExpenseProps> & IExpenseProps;
+export type IExpenseQueryResponse = { expenses: IExpenseProps[]; pagination: PaginationMetaInfo };

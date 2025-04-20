@@ -1,3 +1,4 @@
+import { Document, Types } from 'mongoose';
 import { CurrencyOptions, DateFormat, Theme, TimeFormat } from '../app';
 
 /**
@@ -35,6 +36,12 @@ export interface IUserProps {
   updatedAt?: Date;
   roles: Array<'admin' | 'user'>;
 }
+
+export type IUserDocument = Document<unknown, object, IUserProps> &
+  IUserProps &
+  Required<{
+    _id: Types.ObjectId;
+  }>;
 
 /**
  * Interface for the pending user verification.

@@ -91,3 +91,18 @@ export type APISuccessResponse<T> = {
  * @property {string} id - Conforms to a valid user id.
  */
 export type UserJWTPayload = { id: string };
+
+/**
+ * @property {number} totalItemsCount - Total number of items across all pages.
+ * @property {number} totalPages - Total number of pages available.
+ * @property {number} page - Current page number (1-based index).
+ * @property {number} limit - Number of items per page.
+ * @property {number} currentPageCount - Number of items in the current page.
+ */
+export type PaginationMetaInfo = {
+  totalItemsCount: number;
+  totalPages: number;
+  page: number;
+  limit: number;
+  currentPageCount: number;
+};

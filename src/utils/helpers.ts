@@ -17,3 +17,24 @@ export const getCurrencySymbol = (currency: CurrencyOptions): string => currency
  * @returns {string} A randomly generated UUID.
  */
 export const generateRandomUUID = (): string => uuidv4();
+
+/**
+ * Checks if two strings are equal, ignoring case and whitespace.
+ *
+ * @param a - First string.
+ * @param b - Second string.
+ * @returns True if equal, false otherwise.
+ */
+export const isSameText = (strA: string, strB: string): boolean =>
+  strA.toLowerCase().trim() === strB.toLowerCase().trim();
+
+/**
+ * Get Budget category key
+ *
+ * @param year - Year of budget creation.
+ * @param month - Month of budget Creation.
+ * @param catName - Category name.
+ * @returns True if equal, false otherwise.
+ */
+export const constructBudgetCatKey = (year: number, month: number, catName: string): string =>
+  `${year}_${month}_${catName.split(' ').join(':')}`;

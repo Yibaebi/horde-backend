@@ -11,7 +11,7 @@ const initializeLocalAuthStrategy = () => {
 
   passport.deserializeUser(async (id: string, done) => {
     try {
-      const user = User.findById(id);
+      const user = await User.findById(id);
       done(null, user);
     } catch (error) {
       done(error, null);

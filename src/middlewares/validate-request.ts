@@ -3,7 +3,7 @@ import { type NextFunction, type Request, type Response } from 'express';
 
 import { BadRequestError } from '@/config/error';
 import { formatZodError, formatZodErrorToString } from '@/utils/response';
-import objectIDSchema from '@/schemas/object-id';
+import { objectIDSchema } from '@/schemas/app';
 
 /**
  * Middleware to validate request payloads using Zod schemas.
@@ -37,7 +37,8 @@ const requestValidator = (
 
 const validateRequestQuery = (schema: z.ZodSchema) => requestValidator(schema, 'query');
 const validateRequestBody = (schema: z.ZodSchema) => requestValidator(schema, 'body');
+const validateRequesParams = (schema: z.ZodSchema) => requestValidator(schema, 'params');
 const validateRequestID = requestValidator(objectIDSchema, 'params');
 
-export { validateRequestQuery, validateRequestID, validateRequestBody };
+export { validateRequestQuery, validateRequestID, validateRequestBody, validateRequesParams };
 export default requestValidator;

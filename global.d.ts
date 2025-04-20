@@ -1,4 +1,10 @@
+import { IPendingUserProps, IUserProps } from './src/types';
+
 declare global {
+  declare namespace Express {
+    export interface User extends Partial<IUserProps>, Partial<IPendingUserProps> {}
+  }
+
   namespace NodeJS {
     interface ProcessEnv {
       PORT: string;

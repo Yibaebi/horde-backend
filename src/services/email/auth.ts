@@ -2,9 +2,10 @@ import { formatTemplate, loadTemplate, type EmailScopes } from '@/utils/email';
 import mailer, { mailerAuthConfig } from '@/config/email';
 import clientRoutes from '@/constants/client-routes';
 import logger from '@/utils/logger';
+import ENV from '@/config/env';
 import type { IUserProps } from '@/types';
 
-const supportEmail = String(mailerAuthConfig.user);
+const supportEmail = `${ENV.APP_NAME} <${String(mailerAuthConfig.user)}>`;
 const currentYear = new Date().getFullYear();
 
 // Email body config
