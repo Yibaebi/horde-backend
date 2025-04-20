@@ -20,7 +20,7 @@ userSettingsRouter.put(
   validateRequestBody(updateProfileSchema),
   async (req, res) => {
     const profileData = updateProfileSchema.parse(req.body);
-    const updatedUser = await findAndUpdateUser((req.user as IUserProps)._id, profileData);
+    const updatedUser = await findAndUpdateUser(String(req.user?._id), profileData);
 
     return res.json(getSuccessResponse(updatedUser));
   }
