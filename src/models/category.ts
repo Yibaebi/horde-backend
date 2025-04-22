@@ -19,6 +19,8 @@ const categorySchema = new Schema<IBudgetCategoryProps>(
       averageAmount: { type: Number, default: 0 },
       minAmount: { type: Number, default: 0 },
       maxAmount: { type: Number, default: 0 },
+      lastExpenseId: { type: Schema.Types.ObjectId },
+      lastExpenseDate: { type: Date },
     },
   },
   { timestamps: true }
@@ -54,6 +56,7 @@ categorySchema.method('resetStats', async function () {
 categorySchema.method('recomputeExpensesStats', async function (this: IBudgetCategoryContext) {
   const results = await ExpenseModel.aggregate([
     { $match: { category: this._id } },
+    { $sort: { expenseDate: -1 } },
     {
       $group: {
         _id: '$category',
@@ -62,6 +65,8 @@ categorySchema.method('recomputeExpensesStats', async function (this: IBudgetCat
         averageAmount: { $avg: '$amount' },
         minAmount: { $min: '$amount' },
         maxAmount: { $max: '$amount' },
+        lastExpenseDate: { $first: '$expenseDate' },
+        lastExpenseId: { $first: '$_id' },
       },
     },
   ]);

@@ -76,6 +76,8 @@ export const validateBudgetById = async (id: string): Promise<IBudgetDocument> =
     throw new NotFoundError('No budget matched specified ID.');
   }
 
+  await budget.refreshCategoryStats();
+
   return budget;
 };
 

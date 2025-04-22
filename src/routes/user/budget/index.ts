@@ -11,7 +11,9 @@ import { validateRequestBody, validateRequestID } from '@/middlewares/validate-r
 import { createBudgetSchema } from '@/schemas/user';
 import { constructBudgetCatKey, getCurrencySymbol } from '@/utils/helpers';
 import { BadRequestError, NotFoundError } from '@/config/error';
+import { paginatedReqQuerySchema } from '@/schemas/app';
 import Budget from '@/models/budget';
+import ExpenseModel from '@/models/expense';
 import RES_CODE_MAP from '@/constants/res-code-map';
 import type { INewBudgetDefaultsResponse } from '@/types';
 
@@ -19,6 +21,77 @@ import userBudgetSourcesRouter from './sources';
 import userBudgetCategoryRouter from './categories';
 
 const userBudgetRouter = Router();
+
+// Get paginated user budgets
+userBudgetRouter.get('/get-all', validateRequestBody(paginatedReqQuerySchema), async (req, res) => {
+  const userId = req.user?._id;
+  const { limit, page } = paginatedReqQuerySchema.parse(req.query);
+  const skip = (page - 1) * limit;
+
+  const result = await Budget.aggregate([
+    { $match: { user: userId } },
+    {
+      $addFields: {
+        // Calculate amountBudgeted from budgetSources
+        amountBudgeted: {
+          $reduce: {
+            input: '$budgetSources',
+            initialValue: 0,
+            in: { $add: ['$$value', '$$this.amount'] },
+          },
+        },
+
+        // Calculate amountSpent from categories
+        amountSpent: {
+          $reduce: {
+            input: '$categories',
+            initialValue: 0,
+            in: { $add: ['$$value', '$$this.amountSpent'] },
+          },
+        },
+      },
+    },
+
+    // Calculate budgetVariance based on the fields above
+    {
+      $addFields: {
+        budgetVariance: { $subtract: ['$amountBudgeted', '$amountSpent'] },
+      },
+    },
+    {
+      $facet: {
+        budgets: [
+          { $sort: { year: -1, month: -1 } },
+          { $skip: skip },
+          { $limit: Number(limit) },
+          {
+            $project: { budgetSources: 0, categories: 0, __v: 0, user: 0, createdAt: 0 },
+          },
+        ],
+        meta: [{ $count: 'totalCount' }],
+      },
+    },
+  ]);
+
+  const budgets = result[0].budgets;
+  const { totalCount } = result[0].meta[0] as { totalCount: number };
+
+  res.send(
+    formatSuccessResponse({
+      message: 'Budget retrieved successfully.',
+      data: {
+        budgets,
+        pagination: {
+          totalItemsCount: totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          currentPageCount: budgets.length,
+          page,
+          limit,
+        },
+      },
+    })
+  );
+});
 
 // Get current month budget
 userBudgetRouter.get('/current-budget', async (_req, res) => {
@@ -104,10 +177,30 @@ userBudgetRouter.get('/new-budget-defaults', async (req, res) => {
   );
 });
 
-// Create a budget for current month
+// Delete Budget
+userBudgetRouter.delete('/:id', validateRequestID, async (req, res) => {
+  const budgetId = req.params.id;
+  const budget = await Budget.findByIdAndDelete(budgetId);
+
+  if (!budget) {
+    throw new NotFoundError('No budget found for this id.');
+  }
+
+  // Delete all budget related expenses
+  await ExpenseModel.deleteMany({ budget: budgetId });
+
+  res.send(
+    formatSuccessResponse({
+      message: 'Budget deleted successfully.',
+      data: budget.toObject({ virtuals: true }),
+    })
+  );
+});
+
+// Create a new budget
 userBudgetRouter.post('/', validateRequestBody(createBudgetSchema), async (req, res) => {
-  const user = req.user;
-  const { year, month, categories, currency, ...otherNewBudgetProps } = createBudgetSchema.parse(
+  const userId = req.user?._id;
+  const { year, month, categories, currency, ...otherNewProps } = createBudgetSchema.parse(
     req.body
   );
 
@@ -126,10 +219,10 @@ userBudgetRouter.post('/', validateRequestBody(createBudgetSchema), async (req, 
 
   // Create new budget
   const budget = new Budget({
-    ...otherNewBudgetProps,
+    ...otherNewProps,
     year,
     month,
-    user: user?._id,
+    user: userId,
     currency,
     currencySym: getCurrencySymbol(currency),
     categories: updatedCategories,
@@ -149,7 +242,6 @@ userBudgetRouter.post('/', validateRequestBody(createBudgetSchema), async (req, 
 // Budget Details Route
 userBudgetRouter.get('/d/:id', validateRequestID, async (req, res) => {
   const budget = await validateBudgetById(req.params.id);
-  await budget.refreshCategoryStats();
 
   res.send(
     formatSuccessResponse({
@@ -162,7 +254,6 @@ userBudgetRouter.get('/d/:id', validateRequestID, async (req, res) => {
 // All Budget Categories Route
 userBudgetRouter.get('/d/:id/all-categories', validateRequestID, async (req, res) => {
   const budget = await validateBudgetById(req.params.id);
-  await budget.refreshCategoryStats();
 
   res.send(
     formatSuccessResponse({
@@ -175,7 +266,6 @@ userBudgetRouter.get('/d/:id/all-categories', validateRequestID, async (req, res
 // All Budget Income sources Route
 userBudgetRouter.get('/d/:id/income-sources', validateRequestID, async (req, res) => {
   const budget = await validateBudgetById(req.params.id);
-  await budget.refreshCategoryStats();
 
   res.send(
     formatSuccessResponse({

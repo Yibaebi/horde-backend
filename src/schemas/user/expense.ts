@@ -43,6 +43,13 @@ export const editExpenseSchema = nonEmptySchema({
   schema: baseExpenseSchema.partial().extend(createExpenseModels.shape),
 });
 
+// Schema for deleting multiple expenses
+export const deleteMultipleExpenseSchema = nonEmptySchema({
+  schema: createExpenseModels
+    .pick({ budget: true })
+    .extend({ category: objectIDSchema.shape.id.optional() }),
+});
+
 // Query expenses data
 export const expenseQuerySchema = z
   .object({

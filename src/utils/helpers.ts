@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import mongoose from 'mongoose';
 
 import { CurrencyOptions } from '@/types';
 import currencySymbols from '@/constants/currency-symbols';
@@ -38,3 +39,12 @@ export const isSameText = (strA: string, strB: string): boolean =>
  */
 export const constructBudgetCatKey = (year: number, month: number, catName: string): string =>
   `${year}_${month}_${catName.split(' ').join(':')}`;
+
+/**
+ * Convert an string ID to a mongoose ObjectId type
+ *
+ * @param id - A valid string ID
+ * @returns {mongoose.Types.ObjectId} A mongoose ObjectId type
+ */
+export const convertIdToObjectId = (id: string): mongoose.Types.ObjectId =>
+  new mongoose.Types.ObjectId(id);

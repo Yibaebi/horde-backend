@@ -1,15 +1,21 @@
 import { Router } from 'express';
 import _ from 'lodash';
 
+import {
+  createExpenseSchema,
+  deleteMultipleExpenseSchema,
+  editExpenseSchema,
+  expenseQuerySchema,
+} from '@/schemas/user/expense';
+
 import { validateRequestBody, validateRequestID } from '@/middlewares/validate-request';
 import { validateBudgetById, validateExpenseById } from '@/services/user';
 import { formatSuccessResponse } from '@/utils/response';
-import { createExpenseSchema, editExpenseSchema, expenseQuerySchema } from '@/schemas/user/expense';
+import { convertIdToObjectId } from '@/utils/helpers';
 import { NotFoundError } from '@/config/error';
 import standardRateLimiters from '@/middlewares/rate-limiter';
-import generateExpenses from '@/scripts/seeds/expenses';
 import ExpenseModel from '@/models/expense';
-import { IExpenseQueryResponse } from 'types/models';
+import type { IExpenseQueryResponse } from '@/types';
 
 const userExpensesRouter = Router();
 
@@ -21,24 +27,50 @@ userExpensesRouter.get(
   async (req, res) => {
     const {
       description,
-      exactAmount,
-      minAmount,
-      maxAmount,
       budget,
       category,
-      startDate,
-      endDate,
       sortBy = 'expenseDate',
-      sortOrder = 'desc',
+      sortOrder,
       page,
       limit,
       year,
       month,
+      ...OtherFilterProps
     } = expenseQuerySchema.parse(req.body);
 
+    // Expense Amount Filters
+    const computeAmountFilters = () => {
+      const { exactAmount, minAmount, maxAmount } = OtherFilterProps;
+
+      if (exactAmount) return { amount: exactAmount };
+      if (minAmount && maxAmount) return { amount: { $gte: minAmount, lte: maxAmount } };
+      if (minAmount) return { amount: { $gte: minAmount } };
+      if (maxAmount) return { amount: { lte: maxAmount } };
+
+      return {};
+    };
+
+    // Expense Date Filters
+    const computeDateFilters = () => {
+      const { endDate, startDate } = OtherFilterProps;
+
+      return startDate || endDate
+        ? {
+            expenseDate: {
+              ...(startDate && { $gte: startDate }),
+              ...(endDate && { $lte: endDate }),
+            },
+          }
+        : {};
+    };
+
+    // Page to skip
     const skip = (page - 1) * limit;
 
-    const results = await ExpenseModel.aggregate([
+    const results = await ExpenseModel.aggregate<{
+      expenses: IExpenseQueryResponse['expenses'];
+      totalCount: [{ count: number }];
+    }>([
       {
         $match: {
           // Scope to user expenses.
@@ -52,29 +84,16 @@ userExpensesRouter.get(
           ...(month && { month }),
 
           // Amount filters
-          ...(exactAmount
-            ? { amount: exactAmount }
-            : minAmount && maxAmount
-              ? { amount: { $gte: minAmount, $lte: maxAmount } }
-              : minAmount
-                ? { amount: { $gte: minAmount } }
-                : maxAmount
-                  ? { amount: { $lte: maxAmount } }
-                  : {}),
+          ...computeAmountFilters(),
 
           // Budget filter
-          ...(budget && { budget }),
+          ...(budget && { budget: convertIdToObjectId(budget) }),
 
           // Category filter
-          ...(category && { category }),
+          ...(category && { category: convertIdToObjectId(category) }),
 
           // Date range filter
-          ...((startDate || endDate) && {
-            expenseDate: {
-              ...(startDate && { $gte: startDate }),
-              ...(endDate && { $lte: endDate }),
-            },
-          }),
+          ...computeDateFilters(),
         },
       },
       {
@@ -110,38 +129,6 @@ userExpensesRouter.get(
     );
   }
 );
-
-// Add Expense
-userExpensesRouter.post('/generate-expenses', async (req, res) => {
-  const userId = req.user?._id;
-  const expenses = generateExpenses();
-
-  for (const expenseProps of expenses) {
-    // Confirm valid budget and category
-    const budget = await validateBudgetById(expenseProps.budget);
-    let category = budget.validateCategory(expenseProps.category);
-
-    // Create expense
-    const newExpense = new ExpenseModel({
-      ...expenseProps,
-      user: userId,
-      year: budget.year,
-      month: budget.month,
-    });
-
-    await newExpense.save();
-
-    // Update budget info
-    category = await category.recomputeExpensesStats();
-    await budget.save();
-  }
-
-  res.send(
-    formatSuccessResponse({
-      message: 'Expenses created successfully.',
-    })
-  );
-});
 
 // Add Expense
 userExpensesRouter.post('/', validateRequestBody(createExpenseSchema), async (req, res) => {
@@ -221,6 +208,29 @@ userExpensesRouter.put(
       formatSuccessResponse({
         message: 'Expense updated successfully.',
         data: updatedExpense,
+      })
+    );
+  }
+);
+
+// Delete multiple expenses
+userExpensesRouter.delete(
+  '/',
+  validateRequestBody(deleteMultipleExpenseSchema),
+  async (req, res) => {
+    const { budget, category } = deleteMultipleExpenseSchema.parse(req.body);
+    const validatedBudget = await validateBudgetById(String(budget));
+
+    if (category) {
+      validatedBudget.validateCategory(category);
+    }
+
+    const result = await ExpenseModel.deleteMany({ budget, ...(category && { category }) });
+
+    res.send(
+      formatSuccessResponse({
+        message: 'Expenses deleted successfully.',
+        data: result,
       })
     );
   }
