@@ -96,6 +96,11 @@ const standardRateLimiters = {
 
   // For public API with higher limits
   public: limitRate(60 * 1000, 60, 'Rate limit exceeded. Please try again later.', {}),
+
+  // For Testing Only
+  devOnly: limitRate(60 * 1000, 0, 'Dev Only Route', {
+    skipIf: [() => ENV.NODE_ENV === 'development'],
+  }),
 };
 
 /**

@@ -1,53 +1,27 @@
 import { z } from 'zod';
 import { faker } from '@faker-js/faker';
 import dayjs from 'dayjs';
+
 import { createExpenseSchema } from '@/schemas/user/expense';
+import { IBudgetCategoryDocument } from '@/types';
+import { DBSeedCategoryKeyTypes } from './budget';
 
-// Categories data
-const categories = [
-  {
-    _id: '680512f2285a27d8d133233a',
-    name: 'Transport' as const,
-  },
-  {
-    _id: '68052e7d337c7490196db35a',
-    name: 'Family' as const,
-  },
-  {
-    _id: '68056e4f1f42d706470912aa',
-    name: 'Rent' as const,
-  },
-  {
-    _id: '68056e4f1f42d706470912ab',
-    name: 'Groceries' as const,
-  },
-  {
-    _id: '68056e4f1f42d706470912ac',
-    name: 'Utilities' as const,
-  },
-  {
-    _id: '68056e4f1f42d706470912ad',
-    name: 'Travel' as const,
-  },
-  {
-    _id: '68056e4f1f42d706470912ae',
-    name: 'Health' as const,
-  },
-  {
-    _id: '68056e4f1f42d706470912af',
-    name: 'Entertainment' as const,
-  },
-  {
-    _id: '68056e4f1f42d706470912b0',
-    name: 'Savings' as const,
-  },
-  {
-    _id: '68056e4f1f42d706470912b1',
-    name: 'Education' as const,
-  },
-];
+type DBSeedFormattedCategories = { _id: string; name: DBSeedCategoryKeyTypes };
 
-const budgetId = '68041b5dc44728267c140aa6';
+/**
+ * Transforms category data from a detailed structure to a simplified format
+ *
+ * @param {Array<IBudgetCategoryProps>} categories - Array of category objects with detailed information
+ * @returns {Array<FormattedCategories>} Array of simplified category objects with only _id and name
+ */
+export function transformCategories(
+  categories: IBudgetCategoryDocument[]
+): Array<DBSeedFormattedCategories> {
+  return categories.map((category) => ({
+    _id: category._id.toString(),
+    name: `${category.name}` as DBSeedCategoryKeyTypes,
+  }));
+}
 
 // Description templates for each category
 const descriptionTemplates = {
@@ -207,7 +181,13 @@ function fillTemplate(template: string) {
 }
 
 // Generate random expenses for each category
-function generateExpenses() {
+function generateExpenses(
+  userId: string,
+  budgetId: string,
+  year: number,
+  month: number,
+  categories: DBSeedFormattedCategories[]
+) {
   const expenses: z.infer<typeof createExpenseSchema>[] = [];
 
   categories.forEach((category) => {
@@ -226,8 +206,11 @@ function generateExpenses() {
             .between({ from: '2025-01-01T00:00:00Z', to: '2025-04-20T23:59:59Z' })
             .toISOString()
         ).toDate(),
-        budget: budgetId,
+        user: userId,
+        year,
+        month,
         category: category._id,
+        budget: budgetId,
       };
 
       expenses.push(expense);
