@@ -8,6 +8,7 @@ import userBudgetRouter from './budget';
 import userExpensesRouter from './expense';
 import userDevRouter from './dev';
 import userConfigurationRouter from './configuration';
+import userNotificationsRouter from './notifications';
 
 const userRouter = Router();
 
@@ -32,6 +33,9 @@ userRouter.use('/budget', userBudgetRouter);
 
 // User Expenses route
 userRouter.use('/expense', userExpensesRouter);
+
+// User Notifications route
+userRouter.use('/notifications', userNotificationsRouter);
 
 // Dev only routes
 userRouter.use('/dev', standardRateLimiters.devOnly, userDevRouter);

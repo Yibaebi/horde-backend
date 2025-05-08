@@ -30,7 +30,7 @@ export const paginatedReqBodySchema = z
   })
   .strict();
 
-export const paginatedReqQuerySchema = z
+export const paginatedReqBaseQuerySchema = z
   .object({
     limit: z
       .string()
@@ -42,7 +42,6 @@ export const paginatedReqQuerySchema = z
       .default('1')
       .transform((val) => parseInt(val)),
   })
-  .strict()
   .partial()
   .transform((data) => ({ limit: data?.limit ?? 10, page: data?.page ?? 1 }))
   .refine(({ page }) => page > 0, { message: 'Page should be 1 or more', path: ['page'] })
@@ -51,17 +50,24 @@ export const paginatedReqQuerySchema = z
     path: ['limit'],
   });
 
-// Year Schema
+// Year Schema - 2000 to current year
 export const budgetYearSchema = z
-  .number()
-  .int()
-  .positive()
+  .string()
+  .transform((val) => parseInt(val))
+  .refine((val) => val >= 2000 && val <= dayjs().year(2099).year(), {
+    message: 'Year must be between 2000 and 2099',
+    path: ['year'],
+  })
   .optional()
-  .default(() => dayjs().year());
+  .default(() => dayjs().year().toString());
 
+// Month Schema - 0 to 11
 export const budgetMonthSchema = z
-  .number()
-  .int()
-  .min(0)
-  .max(11)
-  .default(() => dayjs().month());
+  .string()
+  .transform((val) => parseInt(val))
+  .refine((val) => val >= 0 && val <= 11, {
+    message: 'Month must be between 0 and 11',
+    path: ['month'],
+  })
+  .optional()
+  .default(() => dayjs().month().toString());

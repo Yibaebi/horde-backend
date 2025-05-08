@@ -9,6 +9,7 @@ import { validateRequestID } from '@/middlewares/validate-request';
 import dbSeedDataGenInterface from '@/scripts/seeds';
 import Budget from '@/models/budget';
 import ExpenseModel from '@/models/expense';
+import { CurrencyOptions, IBudgetDocument } from '@/types';
 
 const userDevRouter = Router();
 const { generateBudgetData, generateExpenses, transformCategories } = dbSeedDataGenInterface;
@@ -16,11 +17,12 @@ const { generateBudgetData, generateExpenses, transformCategories } = dbSeedData
 // Seed DB with a new budget with expenses
 userDevRouter.post('/budget-with-exp', async (req, res) => {
   const userId = req.user?._id;
+  const userCurrency = req.user?.preferences?.currency as CurrencyOptions;
   const { year, month } = req.body;
   const budget = generateBudgetData({ year, month });
 
   const {
-    currency,
+    currency = userCurrency,
     categories,
     year: budgetYear,
     month: budgetMonth,
@@ -45,7 +47,7 @@ userDevRouter.post('/budget-with-exp', async (req, res) => {
   });
 
   // Create budget
-  const createdBudget = await newBudget.save();
+  const createdBudget = (await newBudget.save()) as IBudgetDocument;
 
   // Generate random expenses for each category
   const expenses = generateExpenses(
@@ -58,6 +60,7 @@ userDevRouter.post('/budget-with-exp', async (req, res) => {
 
   // Insert all docs at once
   await ExpenseModel.insertMany(expenses);
+  await createdBudget.refreshCategoryStats();
 
   res.send(
     formatSuccessResponse({

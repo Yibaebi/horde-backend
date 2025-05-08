@@ -46,20 +46,31 @@ export const findExpenseById = async (expenseId: string): Promise<IExpenseDocume
  * @returns { Promise<IBudgetDocument | null>} The matching budget document or null if not found.
  */
 export const findBudgetByMonthAndYear = async (
+  userId: string,
   year: number,
   month: number
-): Promise<IBudgetDocument | null> => await Budget.findOne({ year, month });
+): Promise<IBudgetDocument> => {
+  const budget = await Budget.findOne({ user: userId, year, month });
+
+  if (!budget) {
+    throw new NotFoundError('No budget found for the specified month and year.');
+  }
+
+  await budget.refreshCategoryStats();
+
+  return budget;
+};
 
 /**
  * Gets the budget for the current month and year.
  *
  * @returns { Promise<IBudgetDocument | null>} The current month's budget or null if not found.
  */
-export const getCurrentMonthBudget = async (): Promise<IBudgetDocument | null> => {
+export const getCurrentMonthBudget = async (userId: string): Promise<IBudgetDocument | null> => {
   const currentMonth = dayjs().month();
   const currentYear = dayjs().year();
 
-  return await findBudgetByMonthAndYear(currentYear, currentMonth);
+  return await findBudgetByMonthAndYear(userId, currentYear, currentMonth);
 };
 
 /**

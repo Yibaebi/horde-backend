@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 
 import { CurrencyOptions } from '@/types';
 import currencySymbols from '@/constants/currency-symbols';
+import dayjs from 'dayjs';
 
 /**
  * Returns the symbol associated with a given currency code.
@@ -48,3 +49,17 @@ export const constructBudgetCatKey = (year: number, month: number, catName: stri
  */
 export const convertIdToObjectId = (id: string): mongoose.Types.ObjectId =>
   new mongoose.Types.ObjectId(id);
+
+/**
+ * Get the start and end of a month
+ *
+ * @param year - The year to get the start and end of the month
+ * @param month - The month to get the start and end of the month
+ * @returns {Date[]} An array of two dates, the start and end of the month
+ */
+export const getEndAndStartOfMonth = (year: number, month: number): Date[] => {
+  const start = dayjs().date(1).year(year).month(month).startOf('month').toDate();
+  const end = dayjs().date(1).year(year).month(month).endOf('month').toDate();
+
+  return [start, end];
+};

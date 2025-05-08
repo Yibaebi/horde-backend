@@ -37,8 +37,8 @@ const requestValidator = (
 
 const validateRequestQuery = (schema: z.ZodSchema) => requestValidator(schema, 'query');
 const validateRequestBody = (schema: z.ZodSchema) => requestValidator(schema, 'body');
-const validateRequesParams = (schema: z.ZodSchema) => requestValidator(schema, 'params');
+const validateRequestParams = (schema: z.ZodSchema) => requestValidator(schema, 'params');
 const validateRequestID = requestValidator(objectIDSchema, 'params');
 
-export { validateRequestQuery, validateRequestID, validateRequestBody, validateRequesParams };
+export { validateRequestQuery, validateRequestID, validateRequestBody, validateRequestParams };
 export default requestValidator;
