@@ -31,8 +31,8 @@ function generateBudgetData(
     maxSources: number;
     minCategories: number;
     maxCategories: number;
-    year: number;
-    month: number;
+    year: string;
+    month: string;
   }> = {}
 ): object {
   const {
@@ -45,9 +45,12 @@ function generateBudgetData(
     month,
   } = options;
 
-  // Generate a random future date (between 20 and 30 years in the future)
+  // Generate a random future date (between 20 and 80 years in the future)
   const currentDate = dayjs();
-  const futureDate = dayjs(currentDate.add(faker.number.int({ min: 50, max: 70 }), 'year'));
+  const futureDate = dayjs(currentDate.add(faker.number.int({ min: 20, max: 80 }), 'year')).add(
+    faker.number.int({ min: 0, max: 11 }),
+    'month'
+  );
 
   // Common income sources for realistic data
   const commonIncomeSources = [
@@ -203,8 +206,8 @@ function generateBudgetData(
 
   return {
     currency,
-    year: year ?? futureDate.year(),
-    month: month ?? futureDate.month(),
+    year: year ?? String(futureDate.year()),
+    month: month ?? String(futureDate.month()),
     budgetSources,
     categories: budgetCategories,
   };

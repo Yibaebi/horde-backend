@@ -1,6 +1,7 @@
 import { model, Schema } from 'mongoose';
 import { IBudgetCategoryDocument, IBudgetCategoryProps, IBudgetProps } from '@/types';
 import ExpenseModel from './expense';
+import dayjs from 'dayjs';
 
 // Context for Category Virtuals
 type IBudgetCategoryContext = IBudgetCategoryDocument & { parent(): IBudgetProps };
@@ -55,7 +56,27 @@ categorySchema.method('resetStats', async function () {
 
 categorySchema.method('recomputeExpensesStats', async function (this: IBudgetCategoryContext) {
   const results = await ExpenseModel.aggregate([
-    { $match: { category: this._id } },
+    {
+      $match: {
+        $and: [
+          {
+            expenseDate: {
+              $gte: dayjs()
+                .month(this.parent()?.month)
+                .year(this.parent()?.year)
+                .startOf('month')
+                .toDate(),
+
+              $lte: dayjs()
+                .month(this.parent()?.month)
+                .year(this.parent()?.year)
+                .endOf('month')
+                .toDate(),
+            },
+          },
+        ],
+      },
+    },
     { $sort: { expenseDate: -1 } },
     {
       $group: {
