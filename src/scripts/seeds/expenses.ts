@@ -125,20 +125,21 @@ const descriptionTemplates = {
     'Workshop registration fee',
     'Educational supplies',
   ],
-};
-
-// Amount ranges for each category (in cents)
-const amountRanges = {
-  Transport: { min: 1000, max: 25000 },
-  Family: { min: 2000, max: 30000 },
-  Rent: { min: 75000, max: 95000 },
-  Groceries: { min: 2000, max: 15000 },
-  Utilities: { min: 5000, max: 20000 },
-  Travel: { min: 10000, max: 80000 },
-  Health: { min: 2000, max: 25000 },
-  Entertainment: { min: 1000, max: 15000 },
-  Savings: { min: 5000, max: 20000 },
-  Education: { min: 5000, max: 30000 },
+  Other: [
+    'Miscellaneous',
+    'Donation',
+    'Charity',
+    'Gift',
+    'Other',
+    'Unknown',
+    'Refund',
+    'Credit Card Payment',
+    'Bank Transfer',
+    'Cash',
+    'Check',
+    'Credit',
+    'Debit',
+  ],
 };
 
 // Helper function to fill in template variables
@@ -191,21 +192,33 @@ function generateExpenses(
   const expenses: z.infer<typeof createExpenseSchema>[] = [];
 
   categories.forEach((category) => {
-    const numTransactions = faker.number.int({ min: 15, max: 40 });
+    const numTransactions = faker.number.int({ min: 15, max: 50 });
 
     for (let i = 0; i < numTransactions; i++) {
-      const templates = descriptionTemplates[category.name];
+      const templates = descriptionTemplates[category.name] ?? descriptionTemplates.Other;
       const template = faker.helpers.arrayElement(templates);
-      const amountRange = amountRanges[category.name];
+
+      const minAmount = faker.number.int({ min: 10000, max: 100000 });
+      const maxAmount = faker.number.int({ min: minAmount, max: minAmount + 100000 });
+      const amount = faker.number.int({ min: minAmount, max: maxAmount });
+
+      console.log(
+        'amount',
+        dayjs()
+          .month(month)
+          .year(year)
+          .day(faker.number.int({ min: 1, max: 28 }))
+          .toDate()
+      );
 
       const expense = {
-        amount: faker.number.int({ min: amountRange.min, max: amountRange.max }),
+        amount,
         description: fillTemplate(template),
-        expenseDate: dayjs(
-          faker.date
-            .between({ from: '2025-01-01T00:00:00Z', to: '2025-04-20T23:59:59Z' })
-            .toISOString()
-        ).toDate(),
+        expenseDate: dayjs()
+          .month(month)
+          .year(year)
+          .day(faker.number.int({ min: 1, max: 28 }))
+          .toDate(),
         user: userId,
         year,
         month,

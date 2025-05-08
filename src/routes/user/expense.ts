@@ -16,6 +16,7 @@ import { NotFoundError } from '@/config/error';
 import standardRateLimiters from '@/middlewares/rate-limiter';
 import ExpenseModel from '@/models/expense';
 import type { IExpenseQueryResponse } from '@/types';
+import dayjs from 'dayjs';
 
 const userExpensesRouter = Router();
 
@@ -154,26 +155,23 @@ userExpensesRouter.post('/', validateRequestBody(createExpenseSchema), async (re
   await newExpense.save();
 
   // Update budget info
+  budget.lastExpenseDate =
+    !budget.lastExpenseDate || dayjs(newExpense.createdAt).isAfter(budget.lastExpenseDate)
+      ? newExpense.createdAt
+      : budget.lastExpenseDate;
+
+  // Recompute category stats
   category = await category.recomputeExpensesStats();
+
+  // Save budget
   await budget.save();
-
-  const updatedCategory = category.toObject({ virtuals: true });
-
-  const catResponse = _.pick(updatedCategory, [
-    '_id',
-    'name',
-    'amountBudgeted',
-    'amountSpent',
-    'catBudgetVariance',
-    'expensesStats',
-  ]);
 
   res.send(
     formatSuccessResponse({
       message: 'Expense created successfully.',
       data: {
         expense: newExpense,
-        relatedCategory: catResponse,
+        relatedCategory: category,
       },
     })
   );
