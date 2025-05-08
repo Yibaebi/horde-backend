@@ -26,7 +26,7 @@ userNotificationsRouter.get('/', validateRequestBody(notifQuerySchema), async (r
   ]);
 
   const notifications = result[0].notifications;
-  const { totalCount } = result[0].meta[0] as { totalCount: number };
+  const { totalCount } = result[0]?.meta?.[0] || { totalCount: 0 };
 
   res.send(
     formatSuccessResponse({

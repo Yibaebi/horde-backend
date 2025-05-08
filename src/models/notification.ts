@@ -31,7 +31,6 @@ const notificationSchema = new Schema<INotificationProps>(
 
         return date;
       },
-      index: true,
     },
   },
   { timestamps: true }

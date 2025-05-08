@@ -30,6 +30,7 @@ import RES_CODE_MAP from '@/constants/res-code-map';
 
 import type {
   CurrencyOptions,
+  IBudgetDocument,
   ICurrentMonthAnalyticsData,
   ICurrentMonthAnalyticsResponse,
   INewBudgetDefaultsResponse,
@@ -381,7 +382,7 @@ userBudgetRouter.post('/', validateRequestBody(createBudgetSchema), async (req, 
     ...otherNewProps
   } = createBudgetSchema.parse(req.body);
 
-  const duplicateBudget = await findBudgetByMonthAndYear(userId, year, month);
+  const duplicateBudget = await Budget.findOne({ user: userId, year, month });
 
   // Return early if budget for a month already exists
   if (duplicateBudget && duplicateBudget.year === year && duplicateBudget.month === month) {
@@ -745,7 +746,7 @@ userBudgetRouter.get(
     let monthlyTrend = 0;
 
     // Get previous month's expenses and budget in one aggregation
-    const previousBudget = await Budget.aggregate([
+    const previousBudgetQuery = await Budget.aggregate<IBudgetDocument | null>([
       {
         $match: {
           user: userId,
@@ -759,13 +760,15 @@ userBudgetRouter.get(
       { $limit: 1 },
     ]);
 
-    const [previousMonthStart, previousMonthEnd] = getEndAndStartOfMonth(
-      previousBudget[0].year,
-      previousBudget[0].month
-    );
+    const previousBudget = previousBudgetQuery[0];
+
+    // Get previous month's start and end dates
+    const [previousMonthStart, previousMonthEnd] = previousBudget
+      ? getEndAndStartOfMonth(previousBudget.year, previousBudget.month)
+      : [null, null];
 
     // Get previous month's expenses if budget exists
-    const previousMonthExpenses = previousBudget.length
+    const previousMonthExpenses = previousBudget
       ? await ExpenseModel.aggregate([
           {
             $match: {
