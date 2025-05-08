@@ -1,5 +1,13 @@
 import z from 'zod';
-import { budgetMonthSchema, budgetYearSchema, nonEmptySchema, objectIDSchema } from '@/schemas/app';
+
+import {
+  budgetMonthSchema,
+  budgetYearSchema,
+  nonEmptySchema,
+  objectIDSchema,
+  paginatedReqBaseQuerySchema,
+} from '@/schemas/app';
+
 import { CurrencyOptions } from '@/types';
 
 // Budget category schema
@@ -50,7 +58,9 @@ export const editBudgetISSchema = nonEmptySchema({
 // Schema for creating a new budget
 export const budgetSchema = z
   .object({
-    currency: z.nativeEnum(CurrencyOptions, { invalid_type_error: 'Invalid currency option' }),
+    currency: z
+      .nativeEnum(CurrencyOptions, { invalid_type_error: 'Invalid currency option' })
+      .optional(),
     categories: budgetCategoriesSchema,
     year: budgetYearSchema,
     month: budgetMonthSchema,
@@ -58,9 +68,35 @@ export const budgetSchema = z
   })
   .strict();
 
+export const budgetByMonthAndYearSchema = z.object({
+  year: budgetYearSchema,
+  month: budgetMonthSchema,
+});
+
 export const createBudgetSchema = nonEmptySchema({ schema: budgetSchema });
 
 // Schema for editing an existing budget
 export const editBudgetSchema = nonEmptySchema({
   schema: budgetSchema.pick({ currency: true, year: true, month: true }).strict(),
 });
+
+// Schema for paginated budget query
+export const budgetFilterStateSchema = z
+  .object({
+    sortField: z.enum(['year', 'budgeted', 'spent', 'remaining', 'percentage']),
+    sortOrder: z.enum(['asc', 'desc']),
+    budgetAmountFilter: z.enum(['all', 'over', 'under', 'unused']),
+
+    yearFilter: z
+      .string()
+      .or(budgetYearSchema)
+      .transform((val) => (val === 'all' ? null : val)),
+
+    monthFilter: z
+      .string()
+      .or(budgetMonthSchema)
+      .transform((val) => (val === 'all' ? null : val)),
+  })
+  .partial();
+
+export const paginatedBudgetQuerySchema = paginatedReqBaseQuerySchema.and(budgetFilterStateSchema);

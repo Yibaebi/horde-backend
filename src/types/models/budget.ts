@@ -1,4 +1,4 @@
-import { Document, Types } from 'mongoose';
+import { Document, Model, Types } from 'mongoose';
 import { CurrencyOptions } from '../app';
 
 /**
@@ -107,6 +107,7 @@ export interface IBudgetProps {
   budgetSources: IBudgetIncomeSourceDocument[];
   createdAt?: Date;
   updatedAt?: Date;
+  lastExpenseDate?: Date;
 }
 
 export interface IBudgetMethods {
@@ -134,6 +135,10 @@ export type IBudgetDocument = Document<unknown, object, IBudgetProps> &
       _id: Types.ObjectId;
     } & IBudgetMethods
   > &
+  IBudgetMethods;
+
+// Define a model type that includes both the document type and static methods
+export type IBudgetModel = Model<IBudgetProps, object, object, object, IBudgetDocument> &
   IBudgetMethods;
 
 export type IBudgetIncomeSourceDocument = Document<unknown, object, IBudgetIncomeSourceProps> &
@@ -166,4 +171,110 @@ export interface INewBudgetCategoryOccurenceSummary {
 export interface INewBudgetDefaultsResponse {
   recurringCategories: INewBudgetCategoryOccurenceSummary[];
   latestIncomeSources: { budgetSources: IBudgetProps['budgetSources'] }[];
+}
+
+/**
+ * ===============
+ * CURRENT MONTH RESPONSEANALYTICS TYPES
+ * ===============
+ */
+
+export interface ICurrentMonthAnalyticsData {
+  year: number;
+  monthName: string;
+  weeklyStats: ICurrentMonthWeeklyStats;
+  monthlyTrend: number;
+  topCategory: ICurrentMonthTopCategory;
+  dailyStats: ICurrentMonthDailyStats;
+  totalExpensesCount: number;
+  totalExpensesSum: number;
+  avgExpenseAmount: number;
+  largestTransaction: number;
+}
+
+export interface ICurrentMonthDailyStats {
+  dailyAverageTransaction: number;
+  totalDayCount: number;
+  uniqueExpenseDates: ICurrentMonthUniqueExpenseDate[];
+}
+
+export interface ICurrentMonthUniqueExpenseDate {
+  date: string;
+  amount: number;
+  count: number;
+  description: string;
+}
+
+export interface ICurrentMonthRecentTransaction {
+  _id: string;
+  description: string;
+  amount: number;
+  date: Date;
+  categoryId: string;
+  categoryName: string;
+  formattedDate: string;
+}
+
+export interface ICurrentMonthTopCategory {
+  _id: string;
+  categoryName: string;
+  totalSpent: number;
+  count: number;
+}
+
+export interface ICurrentMonthWeeklyStats {
+  averageWeeklySpending: number;
+  peakSpendingWeek: ICurrentMonthWeek;
+  weeks: ICurrentMonthWeek[];
+}
+
+export interface ICurrentMonthWeek {
+  totalSpent: number;
+  count: number;
+  week: number;
+  dateRange: ICurrentMonthDateRange;
+}
+
+export interface ICurrentMonthDateRange {
+  start: string;
+  end: string;
+}
+
+export interface ICurrentMonthOverallStat {
+  totalExpensesCount: number;
+  totalExpensesSum: number;
+  avgExpenseAmount: number;
+  largestTransaction: number;
+  totalDayCount: number;
+  uniqueDays: ICurrentMonthUniqueExpenseDate[];
+}
+
+/**
+ * ===============
+ * CURRENT MONTH AGGREGATE RESPONSE TYPES
+ * ===============
+ */
+
+interface ICurrentMonthAggDailyStats {
+  _id: string;
+  totalSpent: number;
+  count: number;
+  date: Date;
+  description: string;
+  categoryName: string;
+}
+
+interface ICurrentMonthAggWeeklyStats {
+  totalSpent: number;
+  count: number;
+  week: number;
+  dateRange: ICurrentMonthDateRange;
+}
+
+export interface ICurrentMonthAnalyticsResponse {
+  weeklySpending: ICurrentMonthAggWeeklyStats[];
+  topCategory: ICurrentMonthTopCategory[];
+  dailyStats: ICurrentMonthAggDailyStats[];
+  overallStats: ICurrentMonthOverallStat[];
+  recentTransactions: ICurrentMonthRecentTransaction[];
 }

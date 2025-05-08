@@ -2,7 +2,7 @@ import { Router } from 'express';
 import _ from 'lodash';
 
 import {
-  validateRequesParams,
+  validateRequestParams,
   validateRequestBody,
   validateRequestID,
 } from '@/middlewares/validate-request';
@@ -71,7 +71,7 @@ userBudgetCategoryRouter.post(
 // Update Category
 userBudgetCategoryRouter.put(
   '/:id/category/:catId',
-  validateRequesParams(editBudgetCatSchemaParams),
+  validateRequestParams(editBudgetCatSchemaParams),
   validateRequestBody(editBudgetCatSchema),
   async (req, res) => {
     const budgetId = req.params.id;
@@ -108,7 +108,7 @@ userBudgetCategoryRouter.put(
 // Delete a Category
 userBudgetCategoryRouter.delete(
   '/:id/category/:catId',
-  validateRequesParams(editBudgetCatSchemaParams),
+  validateRequestParams(editBudgetCatSchemaParams),
   async (req, res) => {
     const budgetId = req.params.id;
     const catId = req.params.catId;

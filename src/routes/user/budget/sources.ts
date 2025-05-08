@@ -2,7 +2,7 @@ import { Router } from 'express';
 import _ from 'lodash';
 
 import {
-  validateRequesParams,
+  validateRequestParams,
   validateRequestBody,
   validateRequestID,
 } from '@/middlewares/validate-request';
@@ -60,7 +60,7 @@ userBudgetISourcesRouter.post(
 // Update income source
 userBudgetISourcesRouter.put(
   '/:id/source/:sourceId',
-  validateRequesParams(editBudgetISParamsSchema),
+  validateRequestParams(editBudgetISParamsSchema),
   validateRequestBody(editBudgetISSchema),
   async (req, res) => {
     const budgetId = req.params.id;
@@ -92,7 +92,7 @@ userBudgetISourcesRouter.put(
 // Delete an income source
 userBudgetISourcesRouter.delete(
   '/:id/source/:sourceId',
-  validateRequesParams(editBudgetISParamsSchema),
+  validateRequestParams(editBudgetISParamsSchema),
   async (req, res) => {
     const budgetId = req.params.id;
     const sourceId = req.params.sourceId;

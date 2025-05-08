@@ -10,6 +10,7 @@ import type {
   IBudgetCategoryDocument,
   IBudgetDocument,
   IBudgetIncomeSourceDocument,
+  IBudgetModel,
 } from '@/types';
 
 import { categorySchema } from './category';
@@ -24,6 +25,7 @@ const budgetSchema = new Schema<IBudgetProps>(
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     currency: { type: String, default: CurrencyOptions.NGN },
     id: { type: String, select: false },
+    lastExpenseDate: { type: Date, default: null },
     year: {
       type: Number,
       required: true,
@@ -181,6 +183,6 @@ budgetSchema.method(
 );
 
 // Budget model
-const Budget = model<IBudgetProps>('Budget', budgetSchema);
+const Budget = model<IBudgetProps, IBudgetModel>('Budget', budgetSchema);
 
 export default Budget;
